@@ -1,0 +1,29 @@
+# Redesign Tasks
+
+- [x] **Phase 1: Design System & Theming**
+    - [x] Update `Color.kt` with premium palette
+    - [x] Update `Type.kt` with Poppins/Inter typography
+    - [x] Refactor `Theme.kt` for glassmorphism support
+    - [x] Create reusable `GlassCard` and `PremiumButton` components
+- [x] **Phase 2: Home Screen (Hub) Redesign**
+    - [x] Implement new Header with Profile Avatar
+    - [x] Create the merged "AI Journal" premium card
+    - [x] Implement Mood Stability and Productivity metric cards with circular progress
+    - [x] Create the "Insights Preview" navigation card
+    - [x] Remove Search icon and FAB from Hub
+- [x] **Phase 3: Insights Module**
+    - [x] Implement `InsightsViewModel` for data processing
+    - [x] Create Emotion Analysis donut chart
+    - [x] Implement Mood Trend graph with range switching
+    - [x] Add AI Wellness Summary and Recommendation cards
+- [x] **Phase 4: Journaling Experience**
+    - [x] Redesign `JournalScreen` layout (Prompt, Writing Area, Voice)
+    - [x] Implement horizontal emoji mood selector
+    - [x] Add support for attachments (Photo, Voice, Tags)
+- [x] **Phase 5: Auth & Profile**
+    - [x] Set up Firebase Authentication & Firestore
+    - [x] Create landing/welcome screen for unauthenticated users
+    - [x] Redesign `ProfileScreen` with premium cards and settings
+- [x] **Phase 6: Technical Integration & Animation**
+    - [x] Implement smooth card fade and screen transitions
+    - [x] Ensure real-time stability score updates after entry
