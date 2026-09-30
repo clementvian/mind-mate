@@ -1,6 +1,0 @@
-- [x] Add `kotlin-android` to `gradle/libs.versions.toml`
-- [x] Fix root `build.gradle.kts` (merge `plugins`, remove module blocks)
-- [x] Update `app/build.gradle.kts` (add `kotlin.android`)
-- [x] Run Gradle sync to verify (Failed: kotlin.android not needed for AGP 9.0+)
-- [x] Remove `kotlin.android` from all build files and catalog
-- [x] Run Gradle sync to verify again
