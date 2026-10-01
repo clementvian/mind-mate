@@ -1,0 +1,13 @@
+{
+  "name": "mindmate-web",
+  "version": "1.0.0",
+  "description": "MindMate - AI Mental Wellness & Dev Productivity Web App",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": ["mindmate", "mental-health", "productivity", "journal", "leetcode", "github"],
+  "author": "",
+  "license": "ISC"
+}

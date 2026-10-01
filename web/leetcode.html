@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CodeProfile — LeetCode Analytics</title>
+  <meta name="description" content="Look up any LeetCode profile: solved problems, contest performance, badges and recent submissions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="lc/lc.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237A62C4'/></svg>">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="leetcode.html" aria-label="CodeProfile home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </span>
+        <span class="brand-name">CodeProfile</span>
+      </a>
+      <form class="search" id="search-form" role="search">
+        <label class="sr-only" for="username">LeetCode username</label>
+        <input id="username" name="username" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="LeetCode username" required>
+        <button class="btn" id="view-btn" type="submit"><span class="btn-label">View Profile</span><span class="btn-spin" aria-hidden="true"></span></button>
+      </form>
+    </div>
+  </header>
+
+  <main class="page" id="app" aria-live="polite"></main>
+
+  <script type="module" src="lc/main.js"></script>
+</body>
+</html>

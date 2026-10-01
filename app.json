@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "bc7eeb4a-7177-420c-b4b9-7bbd7c6db99b"
+      }
+    },
+    "android": {
+      "package": "com.vian_clement.mindmate"
+    },
+    "ios": {
+      "bundleIdentifier": "n",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    }
+  }
+}

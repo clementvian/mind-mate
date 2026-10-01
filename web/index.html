@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MindMate — AI Mental Wellness & Dev Productivity</title>
+  <meta name="description" content="MindMate brings together AI-guided journaling, mood stability tracking, and developer productivity analytics in a serene, glassmorphic interface.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237A62C4'/></svg>">
+</head>
+<body>
+  <!-- Background Ambient Glow Orbs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- App Wrapper (Supports both fluid Desktop and Phone View modes) -->
+  <div id="app-container" class="app-container mode-desktop">
+
+    <!-- Top Navigation Header -->
+    <header class="top-nav glass-card" id="main-header">
+      <div class="nav-brand" id="brand-logo">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">MindMate</span>
+          <span class="brand-badge">PRO</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Desktop View) -->
+      <nav class="nav-links" id="desktop-nav">
+        <button class="nav-tab active" data-tab="hub" id="tab-hub-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-tab" data-tab="journal" id="tab-journal-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span>AI Journal</span>
+        </button>
+        <button class="nav-tab" data-tab="insights" id="tab-insights-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Insights</span>
+        </button>
+        <button class="nav-tab" data-tab="dev" id="tab-dev-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Dev Hub</span>
+        </button>
+        <button class="nav-tab" data-tab="schedule" id="tab-schedule-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Schedule</span>
+        </button>
+        <button class="nav-tab" data-tab="profile" id="tab-profile-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Profile</span>
+        </button>
+      </nav>
+
+      <!-- Header Controls -->
+      <div class="nav-actions">
+        <!-- Phone/Desktop View Switcher -->
+        <button class="btn-icon" id="view-mode-toggle" title="Toggle Mobile / Desktop Frame" aria-label="Toggle layout frame">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="frame-icon"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        </button>
+
+        <!-- New Entry Action Button -->
+        <button class="btn-primary btn-sm" id="btn-quick-new-entry">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>New Entry</span>
+        </button>
+
+        <!-- Student Name Badge -->
+        <div id="student-session-badge" class="session-badge">
+          <span id="student-session-name">Student</span>
+        </div>
+
+        <!-- Sign Out -->
+        <button class="btn-icon" id="btn-signout" title="Sign Out" aria-label="Sign out"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+
+        <!-- User Avatar -->
+        <div class="user-avatar-badge" id="btn-user-avatar" title="My Profile">
+          <div class="avatar-circle" id="avatar-initial"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Stage -->
+    <main class="main-content" id="main-content">
+
+      <!-- ========================================================
+           SCREEN 1: HUB / DASHBOARD (Faithfully matches Android Screen)
+           ======================================================== -->
+      <section class="screen-view active" id="view-hub">
+        <!-- Student Attendance Check-In Card -->
+      <div id="attendance-checkin-card" class="glass-card tint-pink attendance-card">
+        <div class="att-left">
+          <div>
+            <div class="att-title">Today's Attendance</div>
+            <div class="att-sub" id="att-date-label">Today</div>
+          </div>
+        </div>
+        <div class="att-right">
+          <!-- Status badge: updated by refreshAttStatus() based on biometric tagged flag -->
+          <span id="att-status-indicator" class="att-pill">Not Tagged</span>
+        </div>
+        <div id="activity-rows" class="activity-rows" aria-label="Coding activity, last 14 days"></div>
+      </div>
+
+      <!-- Mobile Frame Header (when in Phone view) -->
+        <div class="phone-status-bar">
+          <span class="phone-time" id="status-clock">9:41</span>
+          <div class="phone-icons">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19H19.65l-.62-1.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/></svg>
+          </div>
+        </div>
+
+        <!-- Greeting Block -->
+        <div class="greeting-header">
+          <div class="orb-deco" aria-hidden="true"><i></i><i></i></div>
+          <div class="greeting-text">
+            <h1 class="greeting-title">Good Morning</h1>
+            <p class="greeting-user">Welcome back, <strong id="greeting-username"></strong></p>
+            <p class="greeting-sub">How are you feeling today?</p>
+          </div>
+          <button class="header-avatar-btn" id="header-avatar-trigger" title="View Profile">
+            <div class="avatar-icon-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- Hero Card: AI Journal Prompt -->
+        <div class="glass-card hero-journal-card" id="hero-journal-banner">
+          <div class="sparkle-chip">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z"/></svg>
+            <span>AI Journal</span>
+          </div>
+          <div class="prompt-meta">Today's Prompt</div>
+          <h2 class="prompt-quote" id="daily-prompt-text">"What made you smile today?"</h2>
+          <button class="btn-primary btn-hero" id="btn-start-journaling">
+            <span>Start Journaling</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+
+        <!-- Dual Metric Gauges Row -->
+        <div class="metrics-grid">
+          <!-- Mood Stability Gauge Card -->
+          <div class="glass-card metric-card" id="metric-stability-card">
+            <div class="metric-info">
+              <span class="metric-label">Mood Stability</span>
+              <div class="gauge-container">
+                <svg class="circular-gauge" viewBox="0 0 36 36">
+                  <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="circle-val stability-stroke" stroke-dasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="gauge-number" id="stability-percent">70%</div>
+              </div>
+              <span class="metric-status status-fluctuating" id="stability-label">Fluctuating</span>
+            </div>
+          </div>
+
+          <!-- Productivity Gauge Card -->
+          <div class="glass-card metric-card" id="metric-productivity-card">
+            <div class="metric-info">
+              <span class="metric-label">Productivity</span>
+              <div class="gauge-container">
+                <svg class="circular-gauge" viewBox="0 0 36 36">
+                  <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="circle-val prod-stroke" id="productivity-gauge-val" stroke-dasharray="45, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <div class="gauge-number" id="productivity-percent">45%</div>
+              </div>
+              <span class="metric-status status-positive" id="productivity-trend">+8% this week</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Insights Summary Card -->
+        <div class="glass-card insights-summary-card" id="insights-summary-banner">
+          <div class="insights-summary-header">
+            <h3 class="card-heading">Insights</h3>
+            <button class="btn-text-arrow" id="btn-see-more-insights">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+          <div class="insights-row">
+            <div class="insight-stat">
+              <span class="stat-caption">Mood</span>
+              <span class="stat-highlight">70%</span>
+            </div>
+            <div class="insight-divider"></div>
+            <div class="insight-stat">
+              <span class="stat-caption">Streak</span>
+              <span class="stat-highlight"><span id="streak-days">0</span> Days</span>
+            </div>
+            <div class="insight-divider"></div>
+            <div class="insight-stat">
+              <span class="stat-caption">Emotion</span>
+              <span class="stat-highlight text-emotion" id="top-emotion-val">Happy</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mood Filters Carousel -->
+        <div class="filters-scroll-container">
+          <div class="filter-pills" id="hub-filter-pills">
+            <button class="pill-btn active" data-filter="All">All</button>
+            <button class="pill-btn" data-filter="Happy">Happy</button>
+            <button class="pill-btn" data-filter="Calm">Calm</button>
+            <button class="pill-btn" data-filter="Neutral">Neutral</button>
+            <button class="pill-btn" data-filter="Anxious">Anxious</button>
+            <button class="pill-btn" data-filter="Sad">Sad</button>
+            <button class="pill-btn" data-filter="Excited">Excited</button>
+          </div>
+        </div>
+
+        <!-- Journal Entries Stream -->
+        <div class="entries-stream-section">
+          <div class="section-title-row">
+            <h3 class="section-title">Recent Reflections</h3>
+            <span class="entries-count-badge" id="entries-count-pill">4 entries</span>
+          </div>
+          <div class="entries-list" id="hub-entries-list">
+            <!-- Dynamic entries inserted by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Integrated Dev Productivity Module (As seen in DevProductivityModule.kt) -->
+        <div class="dev-module-container">
+          <div class="dev-module-header">
+            <div class="dev-badge-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <span>Developer Insights</span>
+            </div>
+            <div class="dev-header-actions">
+            <button class="btn-ghost-sm" id="btn-refresh-activity" title="Refresh live data" aria-label="Refresh live data">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              <span>Refresh</span>
+            </button>
+            <button class="btn-ghost-sm" id="btn-open-dev-config" title="Configure Dev Accounts">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>Setup</span>
+            </button>
+          </div>
+          </div>
+
+          <!-- Feature D: Interactive Study Time Logger (From DevProductivityModule.kt:522) -->
+          <div class="glass-card study-logger-card" id="study-logger-widget">
+            <div class="logger-card-header">
+              <div>
+                <h4 class="logger-card-title">Study Time Logger</h4>
+                <p class="logger-card-sub" id="study-today-summary">1h 45m of 4h today</p>
+              </div>
+              <div class="logger-progress-ring">
+                <svg viewBox="0 0 36 36" class="small-gauge">
+                  <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                  <path class="circle-val logger-stroke" id="logger-gauge-stroke" stroke-dasharray="44, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                </svg>
+                <span class="small-gauge-val" id="logger-gauge-pct">44%</span>
+              </div>
+            </div>
+
+            <!-- Subject Selector Dropdown -->
+            <div class="input-field-group">
+              <label for="study-subject-select" class="input-label">Focus Subject</label>
+              <div class="custom-select-wrapper">
+                <select id="study-subject-select" class="custom-select">
+                  <option value="COMPETITIVE_PROGRAMMING" selected>Competitive Programming</option>
+                  <option value="SYSTEM_DESIGN">System Design & Architecture</option>
+                  <option value="ANDROID_DEV">Android & Jetpack Compose</option>
+                  <option value="FULLSTACK_WEB">Modern Web & React</option>
+                  <option value="MACHINE_LEARNING">Machine Learning & Data</option>
+                  <option value="DEVOPS">Cloud & DevOps</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Time Steppers (Hours & Minutes) -->
+            <div class="steppers-row">
+              <div class="stepper-box">
+                <span class="stepper-caption">Hours</span>
+                <div class="stepper-controls">
+                  <button class="btn-step" id="btn-hours-minus" aria-label="Decrease hours">&minus;</button>
+                  <span class="stepper-val" id="stepper-hours-val">1</span>
+                  <button class="btn-step" id="btn-hours-plus" aria-label="Increase hours">+</button>
+                </div>
+              </div>
+              <div class="stepper-box">
+                <span class="stepper-caption">Minutes (&plusmn;15)</span>
+                <div class="stepper-controls">
+                  <button class="btn-step" id="btn-mins-minus" aria-label="Decrease minutes by 15">&minus;</button>
+                  <span class="stepper-val" id="stepper-mins-val">30</span>
+                  <button class="btn-step" id="btn-mins-plus" aria-label="Increase minutes by 15">+</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Log Button -->
+            <button class="btn-primary btn-block" id="btn-log-study-session">
+              <svg class="icon-idle" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <span>Log Study Session (<span id="btn-log-total-time">1h 30m</span>)</span>
+            </button>
+          </div>
+
+          <!-- LeetCode Live Card (Live API) -->
+          <div class="lc-live-card-container" id="card-leetcode-stats">
+            <!-- Top Header -->
+            <div class="lc-live-header">
+              <div class="lc-live-identity">
+                <div class="lc-live-logo-badge">LC</div>
+                <div>
+                  <h2 class="lc-live-title">LeetCode Live</h2>
+                  <p class="lc-live-username" id="lc-username-tag">@clementvian</p>
+                </div>
+              </div>
+
+              <div class="lc-live-active-badge" id="lc-active-badge">
+                <span class="lc-live-pulse-dot"></span>
+                <span id="lc-active-text">Active Solver</span>
+              </div>
+            </div>
+
+            <!-- Loading Overlay State -->
+            <div class="lc-live-loading" id="lc-loading-overlay">
+              <div class="lc-live-spinner"></div>
+              <span>Connecting to LeetCode API...</span>
+            </div>
+
+            <!-- Main Card Content -->
+            <div class="lc-live-content" id="lc-live-content" style="display:none;">
+              <!-- Difficulty Grid: EASY, MEDIUM, HARD -->
+              <div class="lc-live-diff-grid">
+                <!-- EASY Box -->
+                <div class="lc-live-diff-box easy">
+                  <span class="lc-live-diff-level easy">EASY</span>
+                  <span class="lc-live-diff-count easy" id="lc-easy-count">0</span>
+                  <span class="lc-live-diff-sub easy">Solved</span>
+                </div>
+
+                <!-- MEDIUM Box -->
+                <div class="lc-live-diff-box medium">
+                  <span class="lc-live-diff-level medium">MEDIUM</span>
+                  <span class="lc-live-diff-count medium" id="lc-medium-count">0</span>
+                  <span class="lc-live-diff-sub medium">Solved</span>
+                </div>
+
+                <!-- HARD Box -->
+                <div class="lc-live-diff-box hard">
+                  <span class="lc-live-diff-level hard">HARD</span>
+                  <span class="lc-live-diff-count hard" id="lc-hard-count">0</span>
+                  <span class="lc-live-diff-sub hard">Solved</span>
+                </div>
+              </div>
+
+              <!-- Contest Stats Purple Card -->
+              <div class="lc-live-contest-card">
+                <div class="lc-live-contest-col">
+                  <span class="lc-live-contest-cap">GLOBAL<br>RANKING</span>
+                  <span class="lc-live-contest-val" id="lc-contest-rating">N/A</span>
+                </div>
+
+                <div class="lc-live-contest-col mid">
+                  <span class="lc-live-contest-cap">CONTRIBUTION<br>POINTS</span>
+                  <span class="lc-live-contest-val" id="lc-contest-rank">N/A</span>
+                </div>
+
+                <div class="lc-live-contest-col">
+                  <span class="lc-live-contest-cap">ACTIVE DAYS</span>
+                  <span class="lc-live-contest-val attended" id="lc-contest-attended">0</span>
+                  <span class="lc-live-contest-unit">last 365 days</span>
+                </div>
+              </div>
+
+              <div class="att-strip" id="lc-att-strip"></div>
+
+              <div class="lc-recent" id="lc-recent-list"></div>
+
+              <!-- Footer Row -->
+              <div class="lc-live-footer">
+                <span class="lc-live-total">
+                  Total Solved: <strong id="lc-total-solved">0</strong>
+                </span>
+                <span class="lc-live-source" id="lc-api-source">
+                  leetcode.com/graphql
+                </span>
+              </div>
+            </div>
+
+            <!-- Error message container -->
+            <p class="lc-live-error" id="lc-live-error" style="display:none;"></p>
+          </div>
+
+          <!-- GitHub Card Preview (Live API) -->
+          <div class="glass-card dev-stat-card" id="card-github-stats">
+            <div class="dev-card-top">
+              <div class="dev-card-identity">
+                <img id="gh-avatar-img" class="dev-avatar-circle" src="" alt="GitHub Avatar" style="background:var(--border)">
+                <div>
+                  <h4 class="dev-title" id="gh-name-val">--</h4>
+                  <span class="dev-username-tag" id="gh-username-tag">@—</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="live-dot" title="Live API Connected"></span>
+                <span class="active-streak-chip" id="gh-repos-badge">-- Repos</span>
+              </div>
+            </div>
+
+            <p class="gh-bio-text" id="gh-bio-val" style="display:none;"></p>
+
+            <div class="gh-stats-row">
+              <div class="gh-stat-box">
+                <span class="gh-stat-label">Public Repos</span>
+                <strong class="gh-stat-num" id="gh-repos-count">--</strong>
+              </div>
+              <div class="gh-stat-box">
+                <span class="gh-stat-label">Followers</span>
+                <strong class="gh-stat-num" id="gh-followers-count">--</strong>
+              </div>
+              <div class="gh-stat-box">
+                <span class="gh-stat-label">Following</span>
+                <strong class="gh-stat-num" id="gh-following-count">--</strong>
+              </div>
+            </div>
+
+            <div class="att-strip" id="gh-att-strip"></div>
+            <p class="att-note" id="gh-limited-note" style="display:none;">Limited data: add GITHUB_TOKEN on the server for exact daily contributions.</p>
+
+            <!-- Live GitHub Repositories Container (from api.github.com/users/{username}/repos) -->
+            <div class="gh-repos-section">
+              <span class="section-sub-label">Top Public Repositories (Live)</span>
+              <div class="gh-repos-list" id="gh-live-repos-list">
+                <!-- Dynamically populated from API -->
+              </div>
+            </div>
+
+            <div class="gh-footer-metric">
+              <span>Source: <a href="https://github.com" target="_blank" rel="noreferrer" id="gh-profile-link" style="color:var(--primary); font-weight:700;">api.github.com/users</a></span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Real-Time Data</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SCREEN 2: AI JOURNAL (Full View & Reflection Feed)
+           ======================================================== -->
+      <section class="screen-view" id="view-journal">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">AI Journal</h2>
+            <p class="page-sub">Express yourself freely. MindMate analyzes emotional trends while keeping thoughts secure.</p>
+          </div>
+          <button class="btn-primary btn-pill" id="btn-open-create-entry">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>New Entry</span>
+          </button>
+        </div>
+
+        <!-- Search and Filter Bar -->
+        <div class="glass-card search-filter-bar">
+          <div class="search-input-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="journal-search-input" placeholder="Search entries, keywords, thoughts...">
+          </div>
+          <div class="filter-mood-chips" id="journal-filter-pills">
+            <button class="pill-btn active" data-filter="All">All</button>
+            <button class="pill-btn" data-filter="Happy">Happy</button>
+            <button class="pill-btn" data-filter="Sad">Sad</button>
+            <button class="pill-btn" data-filter="Anxious">Anxious</button>
+            <button class="pill-btn" data-filter="Calm">Calm</button>
+            <button class="pill-btn" data-filter="Excited">Excited</button>
+          </div>
+        </div>
+
+        <!-- Full Journal Grid -->
+        <div class="journal-cards-grid" id="journal-full-grid">
+          <!-- Dynamic entries -->
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SCREEN 3: INSIGHTS & ANALYTICS
+           ======================================================== -->
+      <section class="screen-view" id="view-insights">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">Mental Wellness & Focus Insights</h2>
+            <p class="page-sub">Correlating your mood stability with deep-focus coding and study sessions.</p>
+          </div>
+          <div class="time-range-tabs">
+            <button class="tab-chip active">This Week</button>
+            <button class="tab-chip">Month</button>
+            <button class="tab-chip">Quarter</button>
+          </div>
+        </div>
+
+        <div class="insights-grid-layout">
+          <!-- Weekly Mood Chart Card -->
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <h3 class="card-heading">Weekly Mood Stability Trend</h3>
+              <span class="badge-success">Avg: 74%</span>
+            </div>
+            <div class="weekly-bars-container" id="weekly-mood-bars">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Emotion Distribution Card -->
+          <div class="glass-card chart-card">
+            <div class="chart-header">
+              <h3 class="card-heading">Dominant Emotions</h3>
+              <span class="badge-accent">Last 30 Days</span>
+            </div>
+            <div class="emotions-distribution-list" id="emotions-distribution-bars">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Correlation Analysis Card (As from backend/routes/productivity.js) -->
+          <div class="glass-card full-width-card" id="correlation-card">
+            <div class="chart-header">
+              <div>
+                <h3 class="card-heading">Deep Work vs. Mood Correlation</h3>
+                <p class="card-sub-muted">How your daily study time impacts psychological calm and emotional resilience.</p>
+              </div>
+              <span class="correlation-score-badge">+0.78 Strong</span>
+            </div>
+            <div class="correlation-visual">
+              <div class="scatter-trend-bar">
+                <div class="trend-fill" style="width: 78%;"></div>
+              </div>
+              <p class="correlation-insight-text">
+                <strong>AI Analysis:</strong> Days with <strong>90–150 minutes</strong> of structured study blocks showed a <strong>28% higher emotional stability score</strong> compared to unstructured days.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SCREEN 4: DEV PRODUCTIVITY HUB
+           ======================================================== -->
+      <section class="screen-view" id="view-dev">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">Dev Productivity Hub</h2>
+            <p class="page-sub">Sync LeetCode problem solving, GitHub development commits, and active study sessions.</p>
+          </div>
+          <button class="btn-primary btn-pill" id="btn-dev-hub-setup-trigger" title="Edit Handles" aria-label="Edit Handles">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Edit Handles</span>
+          </button>
+        </div>
+
+        <div class="date-strip" id="date-strip" role="tablist" aria-label="Pick a day"></div>
+
+        <div class="dev-dashboard-grid">
+          <!-- Live Timer Widget -->
+          <div class="glass-card dev-timer-box">
+            <h3 class="card-heading">Active Focus Stopwatch</h3>
+            <div class="timer-display" id="focus-timer-text">25:00</div>
+            <div class="timer-actions">
+              <button class="btn-primary" id="btn-timer-toggle">Start Focus</button>
+              <button class="btn-ghost" id="btn-timer-reset">Reset</button>
+            </div>
+          </div>
+
+          <!-- Study History Log List -->
+          <div class="glass-card study-history-card">
+            <h3 class="card-heading">Logged Study Sessions</h3>
+            <div class="history-list" id="study-history-items">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SCREEN 5: SCHEDULE / PLANNER
+           ======================================================== -->
+      <section class="screen-view" id="view-schedule">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">Daily Mindful Routine</h2>
+            <p class="page-sub">Balance mental recovery with structured technical preparation.</p>
+          </div>
+          <button class="btn-primary btn-pill" id="btn-add-schedule-item">+ Add Routine</button>
+        </div>
+
+        <div class="schedule-timeline" id="schedule-timeline-container">
+          <!-- Dynamically populated routine items -->
+        </div>
+      </section>
+
+      <!-- ========================================================
+           SCREEN 6: PROFILE
+           ======================================================== -->
+      <section class="screen-view" id="view-profile">
+        <div class="profile-card glass-card">
+          <div class="profile-avatar-large" id="profile-avatar-large"></div>
+          <h2 class="profile-name" id="profile-name"></h2>
+          <p class="profile-role" id="profile-role">Student</p>
+          <div class="profile-badges-row">
+            <span class="badge-streak" id="profile-badge-streak">0-Day Journal Streak</span>
+            <span class="badge-stability" id="profile-badge-stability">0% Mood Stability</span>
+            <span class="badge-leetcode" id="profile-badge-leetcode">— LeetCode</span>
+          </div>
+
+          <div class="profile-settings-group">
+            <h4 class="settings-title">Preferences</h4>
+            <div class="setting-row">
+              <span>Crisis Bypass & Safety Assistance</span>
+              <span class="badge-active">Enabled</span>
+            </div>
+            <div class="setting-row">
+              <span>Daily Reminder Notifications</span>
+              <span class="badge-active">8:30 AM</span>
+            </div>
+          </div>
+
+          <div class="profile-actions-row">
+            <button class="btn-ghost" id="btn-export-data">Export Journal Backup</button>
+            <button class="btn-danger-ghost" id="btn-reset-data">Clear All Data</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (Matches Android Navigation in Screenshot) -->
+    <nav class="phone-bottom-nav glass-card" id="mobile-bottom-nav">
+      <button class="phone-nav-item active" data-tab="hub">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-dot"></span>
+      </button>
+      <button class="phone-nav-item" data-tab="journal">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </button>
+      <button class="phone-nav-item" data-tab="insights">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      </button>
+      <button class="phone-nav-item" data-tab="dev">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </button>
+      <button class="phone-nav-item" data-tab="profile">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========================================================
+       MODAL 1: WRITE JOURNAL ENTRY (with Crisis & Safety Detection)
+       ======================================================== -->
+  <div class="modal-backdrop" id="modal-create-entry">
+    <div class="glass-modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">New Reflection</h3>
+        <button class="btn-close-modal" id="btn-close-create-modal">&times;</button>
+      </div>
+      <form id="create-entry-form">
+        <div class="form-group">
+          <label class="form-label" for="entry-title-input">Title</label>
+          <input type="text" id="entry-title-input" class="form-input" placeholder="e.g. Breakthrough with Dynamic Programming" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">How are you feeling right now?</label>
+          <div class="mood-selector-buttons" id="entry-mood-buttons">
+            <button type="button" class="mood-choice active" data-mood="Happy">Happy</button>
+            <button type="button" class="mood-choice" data-mood="Calm">Calm</button>
+            <button type="button" class="mood-choice" data-mood="Neutral">Neutral</button>
+            <button type="button" class="mood-choice" data-mood="Anxious">Anxious</button>
+            <button type="button" class="mood-choice" data-mood="Sad">Sad</button>
+            <button type="button" class="mood-choice" data-mood="Excited">Excited</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="entry-content-input">What's on your mind?</label>
+          <textarea id="entry-content-input" class="form-textarea" rows="5" placeholder="Write candidly. Your reflections help detect cognitive exhaustion and celebrate your wins..." required></textarea>
+        </div>
+
+        <!-- Crisis Sentiment Alert Notice (dynamic) -->
+        <div class="crisis-alert-banner" id="crisis-alert-box" style="display: none;">
+          <div class="crisis-text">
+            <strong>MindMate Safety Compass:</strong> It looks like you might be having a difficult time. You are not alone.
+            <div class="crisis-hotlines">
+              <span>National Suicide & Crisis Lifeline: <strong>988</strong></span>
+              <span>Crisis Text Line: Text HOME to <strong>741741</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="btn-cancel-entry">Cancel</button>
+          <button type="submit" class="btn-primary" id="btn-save-entry">Save Reflection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL 2: DEV PROFILE CONFIGURATION
+       ======================================================== -->
+  <div class="modal-backdrop" id="modal-dev-config">
+    <div class="glass-modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Developer Integration Settings</h3>
+        <button class="btn-close-modal" id="btn-close-dev-modal">&times;</button>
+      </div>
+      <form id="dev-config-form">
+        <div class="form-group">
+          <label class="form-label" for="cfg-leetcode-user">LeetCode Username</label>
+          <input type="text" id="cfg-leetcode-user" class="form-input" placeholder="clementvian" value="">
+          <small class="form-hint">Fetches live solved counts, ranking and submissions from leetcode.com/graphql</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cfg-github-user">GitHub Username</label>
+          <input type="text" id="cfg-github-user" class="form-input" placeholder="Your GitHub username" value="">
+          <small class="form-hint">Fetches live profile details and public repositories from api.github.com</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="cfg-daily-target">Daily Study Target (Minutes)</label>
+          <input type="number" id="cfg-daily-target" class="form-input" min="30" max="720" value="240">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="btn-cancel-dev-cfg">Cancel</button>
+          <button type="submit" class="btn-primary">Save & Sync</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Host -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Main JavaScript App Logic -->
+  <script src="activity-client.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

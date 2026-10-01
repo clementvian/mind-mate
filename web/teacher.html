@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindMate — Teacher Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237A62C4'/></svg>">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --p:#8b5cf6;--ph:#7c3aed;--pg:rgba(139,92,246,.35);
+      --warn:#f59e0b;--danger:#ef4444;--success:#10b981;--info:#3b82f6;
+      --bg:#f8f6fc;--card:rgba(255,255,255,.88);--border:rgba(139,92,246,.15);
+      --text:#1f1f1f;--muted:#6b7280;--f:'Outfit',system-ui,sans-serif;
+      --r-sm:10px;--r-md:18px;--r-lg:26px;--r-full:9999px;
+    }
+    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s}
+    .glow{position:fixed;border-radius:50%;filter:blur(90px);opacity:.25;pointer-events:none;animation:drift 14s ease-in-out infinite alternate}
+    .g1{width:500px;height:500px;background:radial-gradient(circle,#8b5cf6,transparent 70%);top:-100px;left:-120px}
+    .g2{width:350px;height:350px;background:radial-gradient(circle,#f59e0b,transparent 70%);bottom:-80px;right:-80px;animation-delay:-6s}
+    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-25px)}}
+
+    /* Header */
+    .header{background:var(--card);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 28px;height:66px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(139,92,246,.06)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);display:grid;place-items:center;font-size:18px}
+    .brand-name{font-size:1.2rem;font-weight:800;color:var(--text)}
+    .brand-role{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:rgba(245,158,11,.15);color:var(--warn);margin-left:6px}
+    .hdr-right{display:flex;align-items:center;gap:12px}
+    .teacher-info{text-align:right}
+    .teacher-name{font-size:.9rem;font-weight:700;color:var(--text)}
+    .btn-icon{background:var(--card);border:1px solid var(--border);border-radius:var(--r-full);padding:8px 14px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text);transition:all .2s}
+    .btn-icon:hover{background:rgba(139,92,246,.08);color:var(--p)}
+
+    /* Alert Badge */
+    .alert-badge{background:var(--danger);color:#fff;border-radius:var(--r-full);font-size:.7rem;font-weight:800;padding:2px 7px;margin-left:6px;animation:pulse 1.5s infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+    /* Main Layout */
+    .main{max-width:1280px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    @media(max-width:900px){.main{grid-template-columns:1fr}}
+    .full-width{grid-column:1/-1}
+
+    /* Cards */
+    .card{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:0 8px 32px rgba(139,92,246,.06)}
+    .card-title{font-size:1rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:18px}
+    .card-title .icon{font-size:18px}
+
+    /* Stats Row */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    @media(max-width:700px){.stats-row{grid-template-columns:1fr 1fr}}
+    .stat-card{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;text-align:center;box-shadow:0 4px 16px rgba(139,92,246,.04)}
+    .stat-num{font-size:2rem;font-weight:800;line-height:1}
+    .stat-label{font-size:.78rem;color:var(--muted);margin-top:4px;font-weight:500}
+    .stat-card.alert-card .stat-num{color:var(--danger)}
+    .stat-card.present-card .stat-num{color:var(--success)}
+    .stat-card.absent-card .stat-num{color:var(--warn)}
+    .stat-card.total-card .stat-num{color:var(--p)}
+
+    /* Alert Items */
+    .alert-list{display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto}
+    .alert-list::-webkit-scrollbar{width:4px} .alert-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+    .alert-item{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-md);padding:16px;position:relative;transition:all .2s}
+    .alert-item:hover{border-color:rgba(239,68,68,.4);box-shadow:0 4px 16px rgba(239,68,68,.1)}
+    .alert-item.resolved{background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.2);opacity:.7}
+    .alert-student{font-size:.85rem;font-weight:700;color:var(--danger);display:flex;align-items:center;gap:6px}
+    .alert-item.resolved .alert-student{color:var(--success)}
+    .alert-time{font-size:.72rem;color:var(--muted);margin-top:2px}
+    .alert-snippet{font-size:.82rem;color:var(--text);margin-top:8px;line-height:1.5;background:rgba(239,68,68,.04);border-radius:8px;padding:8px 10px;border-left:3px solid var(--danger)}
+    .alert-item.resolved .alert-snippet{border-left-color:var(--success)}
+    .alert-keywords{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+    .kw-tag{font-size:.7rem;padding:2px 8px;border-radius:var(--r-full);background:rgba(239,68,68,.12);color:var(--danger);font-weight:600}
+    .alert-actions{display:flex;gap:8px;margin-top:12px}
+    .btn-sm{padding:6px 14px;border-radius:var(--r-full);border:none;cursor:pointer;font-family:var(--f);font-size:.78rem;font-weight:600;transition:all .2s}
+    .btn-resolve{background:rgba(16,185,129,.12);color:var(--success)}.btn-resolve:hover{background:var(--success);color:#fff}
+    .btn-view{background:rgba(139,92,246,.1);color:var(--p)}.btn-view:hover{background:var(--p);color:#fff}
+    .no-alerts{text-align:center;padding:32px;color:var(--muted);font-size:.9rem}
+
+    /* Attendance */
+    .att-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+    .date-selector{display:flex;align-items:center;gap:8px}
+    .date-selector input[type=date]{padding:8px 12px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:rgba(255,255,255,.6);font-family:var(--f);font-size:.85rem;color:var(--text);outline:none}
+    .date-selector input:focus{border-color:var(--p)}
+    .btn-primary{background:linear-gradient(135deg,var(--p),var(--ph));color:#fff;border:none;padding:9px 18px;border-radius:var(--r-full);font-family:var(--f);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px var(--pg)}
+    .btn-primary:hover{transform:translateY(-1px);filter:brightness(1.08)}
+
+    /* Student Attendance Table */
+    .att-table{width:100%;border-collapse:collapse}
+    .att-table th,.att-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:.85rem}
+    .att-table th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+    .att-table tr:last-child td{border-bottom:none}
+    .att-table tr:hover td{background:rgba(139,92,246,.03)}
+    .status-toggle{display:flex;align-items:center;gap:8px}
+    .toggle{width:44px;height:24px;border-radius:var(--r-full);border:none;cursor:pointer;transition:all .25s;position:relative;flex-shrink:0}
+    .toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+    .toggle.present{background:var(--success)}.toggle.present::after{transform:translateX(20px)}
+    .toggle.absent{background:var(--border)}
+    .status-label{font-size:.78rem;font-weight:600;min-width:48px}
+    .status-label.present{color:var(--success)} .status-label.absent{color:var(--muted)}
+    .alert-flag{font-size:.8rem;background:rgba(239,68,68,.1);color:var(--danger);padding:2px 7px;border-radius:var(--r-full);font-weight:600}
+
+    /* Sync strip */
+    .sync-strip{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 14px;background:rgba(16,185,129,.06);border-radius:var(--r-md);border:1px solid rgba(16,185,129,.15)}
+    .sync-status{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+    .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+    .sync-dot.err{background:var(--danger)}
+
+    /* Toast */
+    .toast-zone{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+    .toast{background:var(--text);color:var(--bg);padding:12px 20px;border-radius:var(--r-md);font-size:.85rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:slideIn .3s ease;max-width:320px}
+    .toast.danger-t{background:var(--danger)}
+    .toast.success-t{background:var(--success)}
+    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--card);border-radius:var(--r-lg);padding:32px;max-width:540px;width:90%;box-shadow:0 32px 64px rgba(0,0,0,.2);border:1px solid var(--border)}
+    .modal h3{font-size:1.1rem;font-weight:700;margin-bottom:6px;color:var(--text)}
+    .modal p{font-size:.87rem;color:var(--muted);margin-bottom:16px}
+    .modal-journal{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-sm);padding:14px;font-size:.85rem;line-height:1.6;color:var(--text);margin-bottom:16px}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+  </style>
+</head>
+<body>
+<div class="glow g1"></div><div class="glow g2"></div>
+
+<!-- Header -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
+    <div>
+      <span class="brand-name">MindMate</span>
+      <span class="brand-role">TEACHER</span>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="teacher-info">
+      <div class="teacher-name" id="teacher-name">Ms. Priya Sharma</div>
+    </div>
+    <button class="btn-icon" onclick="logout()">Sign Out</button>
+  </div>
+</header>
+
+<!-- Stats -->
+<div style="max-width:1280px;margin:0 auto;padding:24px 24px 0">
+  <div class="stats-row">
+    <div class="stat-card alert-card">
+      <div class="stat-num" id="stat-alerts">0</div>
+      <div class="stat-label">Active Alerts</div>
+    </div>
+    <div class="stat-card total-card">
+      <div class="stat-num" id="stat-students">5</div>
+      <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-card present-card">
+      <div class="stat-num" id="stat-present">0</div>
+      <div class="stat-label">Present Today</div>
+    </div>
+    <div class="stat-card absent-card">
+      <div class="stat-num" id="stat-absent">0</div>
+      <div class="stat-label">Absent Today</div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Grid -->
+<div class="main">
+
+  <!-- Vulnerability Alerts -->
+  <div class="card">
+    <div class="card-title">Vulnerability Alerts <span id="alert-count-badge" class="alert-badge" style="display:none">0</span></div>
+    <div class="alert-list" id="alert-list">
+      <div class="no-alerts" id="no-alerts">No alerts right now. Students are doing great!</div>
+    </div>
+  </div>
+
+  <!-- Attendance -->
+  <div class="card">
+    <div class="card-title">Attendance Tracker</div>
+    <div class="att-header">
+      <div class="date-selector">
+        <input type="date" id="att-date">
+      </div>
+      <button class="btn-primary" id="btn-fetch-sheets">Fetch from Sheets</button>
+      <button class="btn-primary" id="btn-sync-sheets">Sync to Sheets</button>
+    </div>
+
+    <table class="att-table">
+      <thead>
+        <tr>
+          <th>Student Name</th>
+          <th>Status</th>
+          <th>Flag</th>
+        </tr>
+      </thead>
+      <tbody id="att-body"></tbody>
+    </table>
+
+    <div class="sync-strip">
+      <div class="sync-status">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-msg">Last synced: Never</span>
+      </div>
+      <button class="btn-sm btn-resolve" id="btn-mark-all-present" style="padding:6px 14px">All Present</button>
+    </div>
+  </div>
+
+  <!-- Journal Alerts Log (full-width) -->
+  <div class="card full-width">
+    <div class="card-title">Student Journal Activity (Recent)</div>
+    <table class="att-table" id="journal-activity-table">
+      <thead>
+        <tr><th>Student</th><th>Time</th><th>Mood</th><th>Entry Preview</th><th>Flag</th></tr>
+      </thead>
+      <tbody id="journal-log-body">
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No journal entries recorded yet.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: view full journal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">Student Journal Entry</h3>
+    <p id="modal-meta"></p>
+    <div class="modal-journal" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-view" onclick="closeModal()">Close</button>
+      <button class="btn-sm btn-resolve" id="modal-resolve-btn">Mark Resolved</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Zone -->
+<div class="toast-zone" id="toast-zone"></div>
+
+<script>
+// ─── Session Guard (inside DOMContentLoaded to prevent orientation-change
+//     redirects caused by script re-evaluation during layout reflows) ────────
+document.addEventListener('DOMContentLoaded', function() {
+const sess = JSON.parse(localStorage.getItem('mm_session')||'null');
+if (!sess || sess.role !== 'teacher') { window.location.replace('/login.html'); return; }
+document.getElementById('teacher-name').textContent = sess ? sess.name : 'Teacher';
+
+// ─── Google Sheets Integration ────────────────────────────────
+async function pushToSheets(action, payload) {
+  try {
+    const url = `${window.API_BASE || ''}/api/sheets?action=${encodeURIComponent(action)}&data=${encodeURIComponent(JSON.stringify(payload))}`;
+    await fetch(url);
+    return true;
+  } catch(e) { return false; }
+}
+
+// ─── Real Student Profiles (biometric attendance system) ─────
+// Fields: user (login ID), name,
+//         rfidUid (RFID tag UID from ESP32), faceId (face-embedding ref)
+const ALL_STUDENTS = [
+  { user:'STU-HEMANTH',   name:'Hemanth', rfidUid:'RFID-HEM-001', faceId:'FACE-HEM-001' },
+  { user:'STU-BHARUNESH', name:'Bharunesh', rfidUid:'RFID-BHA-002', faceId:'FACE-BHA-002' },
+  { user:'STU-BRANESH',   name:'Branesh', rfidUid:'RFID-BRN-003', faceId:'FACE-BRN-003' }
+];
+
+// ─── ESP32 Attendance Event Resolver ─────────────────────────
+// Called when the ESP32/backend posts an attendance event with
+// an rfidUid or faceId. Resolves to the real student profile
+// and writes attendance keyed by their canonical user ID.
+function resolveAndLogBiometricEvent(payload) {
+  // payload: { rfidUid?, faceId?, status?, date? }
+  const date = payload.date || new Date().toISOString().slice(0, 10);
+  const st = ALL_STUDENTS.find(s =>
+    (payload.rfidUid && s.rfidUid === payload.rfidUid) ||
+    (payload.faceId  && s.faceId  === payload.faceId)
+  );
+  if (!st) { console.warn('[Biometric] Unknown identifier:', payload); return null; }
+  const key = `mm_att_${date}`;
+  const rec = JSON.parse(localStorage.getItem(key) || '{}');
+  rec[st.user] = payload.status || 'present';
+  localStorage.setItem(key, JSON.stringify(rec));
+  if (date === new Date().toISOString().slice(0, 10)) {
+    attendance[st.user] = rec[st.user];
+    saveAttendance();
+    renderAttendance();
+  }
+  return st;
+}
+// Expose for ESP32 backend webhook calls via postMessage or fetch:
+window.resolveBiometricAttendance = resolveAndLogBiometricEvent;
+
+const students = ALL_STUDENTS;
+document.getElementById('stat-students').textContent = students.length;
+
+// ─── Attendance State ─────────────────────────────────────────
+const attKey = () => `mm_att_${document.getElementById('att-date').value}`;
+let attendance = {}; // { STU001: 'present'|'absent' }
+
+function loadAttendance() {
+  const saved = JSON.parse(localStorage.getItem(attKey())||'{}');
+  attendance = {};
+  students.forEach(s => { attendance[s.user] = saved[s.user] || 'absent'; });
+  renderAttendance();
+}
+
+function saveAttendance() {
+  localStorage.setItem(attKey(), JSON.stringify(attendance));
+  updateStats();
+}
+
+function toggleAttendance(user) {
+  attendance[user] = attendance[user] === 'present' ? 'absent' : 'present';
+  saveAttendance();
+  renderAttendance();
+}
+
+function renderAttendance() {
+  const body = document.getElementById('att-body');
+  const alerts = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
+  body.innerHTML = students.map(s => {
+    const status = attendance[s.user] || 'absent';
+    const hasAlert = alerts.some(a => a.studentUser === s.user && !a.resolved);
+    return `<tr>
+      <td style="font-weight:600">${s.name}</td>
+      <td>
+        <div class="status-toggle">
+          <button class="toggle ${status}" onclick="toggleAttendance('${s.user}')"></button>
+          <span class="status-label ${status}">${status==='present'?'Present':'Absent'}</span>
+        </div>
+      </td>
+      <td>${hasAlert ? '<span class="alert-flag">Alert</span>' : '<span style="color:var(--muted);font-size:.78rem">—</span>'}</td>
+    </tr>`;
+  }).join('');
+  updateStats();
+}
+
+function updateStats() {
+  const p = Object.values(attendance).filter(v=>v==='present').length;
+  const a = Object.values(attendance).filter(v=>v==='absent').length;
+  document.getElementById('stat-present').textContent = p;
+  document.getElementById('stat-absent').textContent = a;
+}
+
+document.getElementById('btn-mark-all-present').onclick = () => {
+  students.forEach(s => attendance[s.user] = 'present');
+  saveAttendance(); renderAttendance();
+  showToast('All students marked present','success');
+};
+
+// Date picker default = today
+const todayStr = new Date().toISOString().slice(0,10);
+document.getElementById('att-date').value = todayStr;
+document.getElementById('att-date').onchange = loadAttendance;
+loadAttendance();
+
+// ─── Google Sheets Sync ───────────────────────────────────────
+document.getElementById('btn-sync-sheets').onclick = async () => {
+  const btn = document.getElementById('btn-sync-sheets');
+  btn.disabled = true; btn.textContent = 'Syncing…';
+  const date = document.getElementById('att-date').value;
+  const rows = students.map(s => ({
+    date, studentId: s.user, name: s.name,
+    status: attendance[s.user]||'absent',
+    teacher: sess.name
+  }));
+  const ok = await pushToSheets('attendance', { rows });
+  document.getElementById('sync-msg').textContent = `Last synced: ${new Date().toLocaleTimeString()}`;
+  document.getElementById('sync-dot').className = 'sync-dot ' + (ok?'':'err');
+  btn.disabled = false; btn.textContent = 'Sync to Sheets';
+  showToast(ok ? 'Attendance synced to Google Sheets!' : 'Sync sent (check Sheets)', ok?'success':'');
+};
+
+// ─── Fetch attendance from Google Sheets (API key stays on the server) ───
+document.getElementById('btn-fetch-sheets').onclick = async () => {
+  const btn = document.getElementById('btn-fetch-sheets');
+  btn.disabled = true; btn.textContent = 'Fetching…';
+  try {
+    const date = document.getElementById('att-date').value;
+    const r = await fetch('/api/attendance?date=' + encodeURIComponent(date));
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Request failed');
+    const pick = (rec, ...names) => { for (const n of names) { const k = Object.keys(rec).find(x => x.toLowerCase() === n.toLowerCase()); if (k && rec[k]) return rec[k]; } return ''; };
+    let matched = 0;
+    data.records.forEach(rec => {
+      const id = pick(rec, 'studentId', 'user', 'id');
+      const st = students.find(s => s.user === id);
+      if (!st) return;
+      attendance[st.user] = pick(rec, 'status').toLowerCase() === 'present' ? 'present' : 'absent';
+      matched++;
+    });
+    saveAttendance(); renderAttendance();
+    showToast(`Loaded ${matched} attendance record(s) from Sheets`, 'success');
+  } catch (e) {
+    showToast('' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Fetch from Sheets';
+};
+
+// ─── Vulnerability Alerts ─────────────────────────────────────
+function loadAlerts() {
+  const all = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
+  // Students shown to the teacher
+  const myStudentUsers = students.map(s=>s.user);
+  const mine = all.filter(a => myStudentUsers.includes(a.studentUser));
+  const active = mine.filter(a=>!a.resolved);
+
+  document.getElementById('stat-alerts').textContent = active.length;
+  const badge = document.getElementById('alert-count-badge');
+  if (active.length > 0) {
+    badge.style.display = 'inline'; badge.textContent = active.length;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  const list = document.getElementById('alert-list');
+  const noAlerts = document.getElementById('no-alerts');
+  if (mine.length === 0) { noAlerts.style.display='block'; list.innerHTML='<div class="no-alerts">No alerts right now!</div>'; return; }
+  noAlerts.style.display='none';
+
+  list.innerHTML = mine.slice().reverse().map((a,i) => `
+    <div class="alert-item ${a.resolved?'resolved':''}" id="alert-item-${a.id}">
+      <div class="alert-student">${a.studentName} <span style="font-size:.7rem;color:var(--muted);font-weight:400">(${a.studentUser})</span></div>
+      <div class="alert-time">${new Date(a.timestamp).toLocaleString()} · ${a.resolved?'Resolved':'UNRESOLVED'}</div>
+      <div class="alert-snippet">"${a.excerpt}"</div>
+      <div class="alert-keywords">${(a.keywords||[]).map(k=>`<span class="kw-tag">${k}</span>`).join('')}</div>
+      ${!a.resolved ? `<div class="alert-actions">
+        <button class="btn-sm btn-resolve" onclick="resolveAlert('${a.id}')">Resolve</button>
+        <button class="btn-sm btn-view" onclick="viewAlert('${a.id}')">View Entry</button>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+function resolveAlert(id) {
+  const all = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
+  const idx = all.findIndex(a=>a.id===id);
+  if (idx>=0) { all[idx].resolved = true; localStorage.setItem('mm_vulnerability_alerts', JSON.stringify(all)); }
+  loadAlerts();
+  renderAttendance();
+  showToast('Alert marked as resolved','success');
+  pushToSheets('alert_resolved', { alertId: id, teacher: sess.name, resolvedAt: Date.now() });
+}
+
+let currentAlertId = null;
+function viewAlert(id) {
+  const all = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
+  const a = all.find(x=>x.id===id);
+  if (!a) return;
+  currentAlertId = id;
+  document.getElementById('modal-title').textContent = `Alert — ${a.studentName}`;
+  document.getElementById('modal-meta').textContent = `Submitted: ${new Date(a.timestamp).toLocaleString()} · Mood: ${a.mood||'Unknown'}`;
+  document.getElementById('modal-body').textContent = a.fullContent || a.excerpt;
+  document.getElementById('modal-resolve-btn').onclick = () => { resolveAlert(id); closeModal(); };
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').onclick = e => { if(e.target===document.getElementById('modal')) closeModal(); };
+
+// ─── Journal Log ──────────────────────────────────────────────
+function loadJournalLog() {
+  const myStudentUsers = students.map(s=>s.user);
+  const allLogs = JSON.parse(localStorage.getItem('mm_journal_log')||'[]');
+  const mine = allLogs.filter(l => myStudentUsers.includes(l.studentUser));
+  const body = document.getElementById('journal-log-body');
+  if (mine.length === 0) { body.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">No journal entries recorded yet.</td></tr>'; return; }
+  body.innerHTML = mine.slice().reverse().slice(0,20).map(l => {
+    const flag = l.hasAlert ? '<span class="alert-flag">Vulnerable</span>' : '<span style="color:var(--muted);font-size:.78rem">—</span>';
+    const mood = l.mood || 'Unknown';
+    const preview = (l.content||'').substring(0,60) + (l.content&&l.content.length>60?'…':'');
+    return `<tr>
+      <td style="font-weight:600">${l.studentName}</td>
+      <td style="color:var(--muted);font-size:.8rem">${new Date(l.timestamp).toLocaleString()}</td>
+      <td><span style="font-size:.8rem">${mood}</span></td>
+      <td style="color:var(--muted);font-size:.82rem">${preview}</td>
+      <td>${flag}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function showToast(msg, type='') {
+  const t = document.createElement('div');
+  t.className = 'toast' + (type?' '+type+'-t':'');
+  t.textContent = msg;
+  document.getElementById('toast-zone').appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// ─── Logout ───────────────────────────────────────────────────
+function logout() { localStorage.removeItem('mm_session'); window.location.href='/login.html'; }
+
+// ─── Auto-refresh alerts every 5s ────────────────────────────
+loadAlerts();
+loadJournalLog();
+setInterval(() => { loadAlerts(); loadJournalLog(); renderAttendance(); }, 5000);
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>

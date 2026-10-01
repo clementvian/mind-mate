@@ -1,0 +1,23 @@
+{
+  "name": "mindmate",
+  "version": "1.0.0",
+  "description": "MindMate - AI Mental Wellness & Dev Productivity Web App",
+  "scripts": {
+    "start": "node web/server.js",
+    "dev": "node web/server.js"
+  },
+  "keywords": [
+    "mindmate",
+    "mental-health",
+    "productivity",
+    "journal",
+    "leetcode",
+    "github"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2"
+  }
+}
