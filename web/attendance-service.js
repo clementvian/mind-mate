@@ -92,7 +92,13 @@ async function readSheetValues(c) {
       return JSON.parse(await request(url, { headers })).values || [];
     }
     const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(c.sheetId)}/gviz/tq?tqx=out:csv${c.tab ? '&sheet=' + encodeURIComponent(c.tab) : ''}`;
-    return parseCsv(await request(url));
+    try {
+      return parseCsv(await request(url));
+    } catch (e) {
+      // Fallback: plain CSV export of the first tab (works for "Anyone with the link" sheets when gviz refuses)
+      if (c.tab || !(e instanceof SheetError) || ![401, 403].includes(e.status)) throw e;
+      return parseCsv(await request(`https://docs.google.com/spreadsheets/d/${encodeURIComponent(c.sheetId)}/export?format=csv`));
+    }
   } catch (e) {
     if (!(e instanceof SheetError)) throw e;
     if (e.status === 403) throw new SheetError(403, 'The sheet is not accessible. Share it with the service account, or publish it / allow viewing with the link.');
@@ -161,23 +167,50 @@ function parseTimestamp(raw, tz) {
 function detectColumns(values, tz) {
   const first = values[0] || [];
   const looksData = parseTimestamp(first[0], tz) !== null;
-  const find = re => first.findIndex(h => re.test(String(h)));
-  let ts = find(/time|date|when/i), uid = find(/rfid|uid|card|tag/i), name = find(/name|student/i);
+  const find = (re, not = []) => first.findIndex((h, i) => !not.includes(i) && re.test(String(h ?? '').trim()));
+  let uid = find(/rfid|rifd|rf\s*id|uid|card|tag/i), name = find(/name|student/i);
+  // Separate "date" and "time" columns (e.g. date | time | name | rfid) are combined into one timestamp.
+  let date = find(/^date$|^day$/i), time = find(/^time$|^tap\s*time$/i);
+  let ts = (date >= 0 && time >= 0) ? date : find(/timestamp|time|date|when/i);
+  const split = date >= 0 && time >= 0 && date !== time;
+  const status = find(/attendance|status/i, [uid, name, ts, time]);
   const headerDetected = !looksData && (ts >= 0 || uid >= 0 || name >= 0);
   if (!headerDetected) { ts = 0; uid = 1; name = 2; }   // assumed order: Timestamp, RFID UID, Name
-  else { if (ts < 0) ts = 0; if (uid < 0) uid = [0, 1, 2].find(i => i !== ts && i !== name) ?? 1; }
-  return { ts, uid, name, headerDetected, labels: { timestamp: first[ts], rfid: first[uid], name: first[name] } };
+  // With a header row we never guess the card column: if none is found (and a name column exists), rows are matched by name only.
+  else { if (ts < 0) ts = 0; if (uid < 0 && name < 0) uid = [0, 1, 2].find(i => i !== ts && !(split && i === time)) ?? 1; }
+  return {
+    ts, uid, name, time: split && headerDetected ? time : -1, status: headerDetected ? status : -1, headerDetected,
+    labels: { timestamp: split ? `${first[date]} + ${first[time]}` : first[ts], rfid: first[uid], name: first[name] }
+  };
 }
+
+// "18:41:34", "8:08 PM" or "1899-12-30 18:41:34" -> "18:41:34"
+function timeOnly(raw) {
+  const m = String(raw ?? '').match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*([AP]M)?\s*$/i);
+  if (!m) return '';
+  let h = Number(m[1]);
+  if (m[4]) { const pm = m[4].toUpperCase() === 'PM'; if (pm && h < 12) h += 12; if (!pm && h === 12) h = 0; }
+  return `${pad(h)}:${m[2]}:${m[3] || '00'}`;
+}
+const normName = v => String(v ?? '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
 function collectTaps(values, c) {
   const cols = detectColumns(values, c.tz);
+  // Rows without a known card (e.g. rfid = "CAMERA" from face recognition) are matched to a profile by name.
+  const users = auth.listUsers();
+  const knownUids = new Set(users.map(u => u.rfidUid).filter(Boolean));
+  const uidByName = new Map();
+  users.forEach(u => { if (u.rfidUid) { uidByName.set(normName(u.username), u.rfidUid); uidByName.set(normName(u.name), u.rfidUid); } });
+
   const taps = new Map();        // uid -> Map(date -> { first, last, count })
-  const unknown = new Map();     // uid -> info (filled later)
   let skipped = 0, used = 0;
   for (const row of values.slice(cols.headerDetected ? 1 : 0)) {
     if (!row || row.every(x => !String(x ?? '').trim())) continue;   // blank row
-    const uid = normUid(row[cols.uid]);
-    const t = parseTimestamp(row[cols.ts], c.tz);
+    if (cols.status >= 0 && /absent/i.test(String(row[cols.status] ?? ''))) { skipped++; continue; }
+    let uid = cols.uid >= 0 ? normUid(row[cols.uid]) : '';
+    if (!knownUids.has(uid)) { const byName = uidByName.get(normName(row[cols.name])); if (byName) uid = byName; }
+    const rawTs = cols.time >= 0 ? `${String(row[cols.ts] ?? '').trim().split(/[ T]/)[0]} ${timeOnly(row[cols.time])}`.trim() : row[cols.ts];
+    const t = parseTimestamp(rawTs, c.tz);
     if (!uid || !t) { skipped++; continue; }
     used++;
     const days = taps.get(uid) || new Map(); taps.set(uid, days);

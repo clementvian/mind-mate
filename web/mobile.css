@@ -1,0 +1,136 @@
+/* ==========================================================================
+   MindMate — mobile-first layout layer (loads last, after theme.css)
+   Layout, sizing and scrolling only: colors and the lavender theme are unchanged.
+   Target 360–430px. Wider screens get a centred phone-width column.
+   Spacing scale: 4 / 8 / 12 / 16 / 20 / 24.
+   ========================================================================== */
+
+:root { --gutter: 16px; --shell: 430px; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: hidden; max-width: 100%; }
+html { background: #ECEAF2; }
+body { min-height: 100dvh; background: #ECEAF2; }
+@media (max-width: 430px) { html, body { background: var(--lav-1); } }
+
+/* ---------- 1. App shell ---------- */
+.app-container,
+.app-container.mode-desktop,
+.app-container.mode-phone {
+  width: 100%;
+  max-width: var(--shell);
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: var(--lav-1);
+  padding: 0 var(--gutter) calc(112px + env(safe-area-inset-bottom));
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
+}
+@media (min-width: 431px) { .app-container { box-shadow: 0 0 0 1px rgba(31, 36, 48, .05); } }
+.main-content { min-width: 0; padding: 0; }
+.screen-view.active { gap: var(--s3); padding-top: var(--s3); }
+.glass-card { padding: var(--s4); border-radius: 24px; }
+.phone-status-bar { display: none !important; }
+#view-mode-toggle { display: none !important; }   /* one layout everywhere: the frame toggle is no longer needed */
+
+/* ---------- Top bar: sticky, 56px ---------- */
+.top-nav, .top-nav.glass-card {
+  position: sticky !important; top: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3); flex-wrap: nowrap;
+  height: calc(56px + env(safe-area-inset-top)); min-height: 0;
+  width: auto !important; max-width: none !important;
+  margin: 0 calc(var(--gutter) * -1); padding: env(safe-area-inset-top) var(--gutter) 0;
+  background: var(--lav-1) !important;
+  border: 0 !important; border-bottom: 1px solid rgba(31, 36, 48, .06) !important;
+  border-radius: 0; box-shadow: none !important; animation: none;
+}
+.nav-brand { display: flex; align-items: center; gap: var(--s2); flex-shrink: 0; min-width: 0; }
+.nav-brand .brand-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; }
+.nav-brand .brand-icon svg { width: 20px; height: 20px; }
+.nav-brand .brand-text { display: flex !important; align-items: center; gap: var(--s2); min-width: 0; }
+.brand-title { font-size: 17px; font-weight: 800; color: var(--ink); white-space: nowrap; letter-spacing: -0.02em; }
+.brand-badge { flex-shrink: 0; white-space: nowrap; font-size: 11px; font-weight: 800; letter-spacing: .04em; padding: 2px 8px; border-radius: var(--r-pill); background: var(--primary-tint); color: var(--dark); }
+.nav-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--s2); flex: 1; min-width: 0; flex-wrap: nowrap; }
+.nav-actions > * { flex-shrink: 0; white-space: nowrap; }
+.nav-actions .session-badge { display: none; }   /* the name is already in the greeting; keeps the bar on one line */
+.session-badge #student-session-name { max-width: 96px; }
+#btn-quick-new-entry { width: 44px; height: 44px; padding: 0; justify-content: center; border-radius: var(--r-pill); }
+#btn-quick-new-entry span { display: none; }
+#btn-signout { width: auto; height: 44px; padding: 0 var(--s3); gap: 6px; border-radius: var(--r-pill); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; }
+#btn-signout svg { width: 16px; height: 16px; }
+#btn-user-avatar { display: none !important; }
+/* Narrow phones: logo + role badge on the left, + and Sign Out on the right */
+@media (max-width: 419px) { .brand-title { display: none; } }
+
+/* ---------- 3. Today's Attendance card ---------- */
+.attendance-card { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--s4) var(--s2); }
+.attendance-card .att-left { flex: 1 1 auto; min-width: 0; }
+.attendance-card .att-left > div { min-width: 0; }
+.attendance-card .att-title, .attendance-card .att-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.attendance-card .att-right { flex-shrink: 0; margin-left: auto; display: flex; align-items: center; justify-content: flex-end; gap: var(--s2); }
+.attendance-card .att-pill { height: 32px; display: inline-flex; align-items: center; padding: 0 var(--s3); }
+.attendance-card #btn-refresh-attendance { min-height: 44px; padding: 0 var(--s4); white-space: nowrap; }
+@media (max-width: 379px) {
+  .attendance-card .att-right { flex: 1 1 100%; justify-content: flex-end; flex-wrap: wrap; margin-top: calc(var(--s2) * -1); }
+}
+.attendance-card .school-att, .attendance-card .activity-rows { flex: 1 1 100%; min-width: 0; }
+.att-stats, .att-skel-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s3); }
+.att-stat { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s1); padding: 14px 16px; border-radius: 20px; min-width: 0; text-align: left; }
+.att-stat-label { font-size: 11px; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.att-stat-value { font-size: 22px; font-weight: 800; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.att-skel-stats .skeleton { height: 72px; border-radius: 20px; }
+.att-error { overflow-wrap: anywhere; }
+.att-row { min-width: 0; grid-template-columns: max-content minmax(0, 1fr) auto; }
+.att-row .att-label { white-space: nowrap; }
+.att-row .att-caption { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+/* ---------- 4. Horizontally scrollable chip / tab rows ---------- */
+.filters-scroll-container { margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s3); min-width: 0; }
+.filter-pills, .filter-mood-chips, .time-range-tabs, .date-strip, .mood-selector-buttons, [data-scroll-row] {
+  display: flex; flex-wrap: nowrap; gap: var(--s2);
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x proximity; scroll-padding-inline: var(--gutter);
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  margin: 0 calc(var(--gutter) * -1);
+  padding: var(--s1) var(--gutter);
+  width: auto; max-width: none; min-width: 0;
+  position: relative;
+}
+.filter-pills::-webkit-scrollbar, .filter-mood-chips::-webkit-scrollbar, .time-range-tabs::-webkit-scrollbar,
+.date-strip::-webkit-scrollbar, .mood-selector-buttons::-webkit-scrollbar, [data-scroll-row]::-webkit-scrollbar { display: none; }
+/* Rows inside a header that wraps take the full bleed width */
+.screen-header:has(.time-range-tabs) .time-range-tabs { flex: 0 0 calc(100% + 2 * var(--gutter)); }
+/* The mood picker sits in a modal with 20px padding: bleed to the modal edge instead */
+.glass-modal-card .mood-selector-buttons { margin: 0 calc(var(--s5) * -1); padding: var(--s1) var(--s5); scroll-padding-inline: var(--s5); }
+.pill-btn, .tab-chip, .mood-choice {
+  flex: 0 0 auto; scroll-snap-align: start; white-space: nowrap;
+  height: 36px; padding: 0 var(--s4); display: inline-flex; align-items: center; justify-content: center;
+}
+.date-chip { flex: 0 0 48px; scroll-snap-align: start; }
+/* Edge fade: shown only while more chips exist in that direction (classes set by mobile.js) */
+.is-scroll-row.fade-end { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
+.is-scroll-row.fade-start { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px); mask-image: linear-gradient(to right, transparent, #000 40px); }
+.is-scroll-row.fade-start.fade-end { -webkit-mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent); mask-image: linear-gradient(to right, transparent, #000 40px, #000 calc(100% - 40px), transparent); }
+.is-scroll-row.dragging { cursor: grabbing; scroll-snap-type: none; user-select: none; }
+.is-scroll-row.dragging * { pointer-events: none; }
+@media (hover: hover) and (pointer: fine) { .is-scroll-row { cursor: grab; } }
+
+/* ---------- Overflow safety for text in cards ---------- */
+.card-heading, .section-title, .greeting-title, .page-title, .entry-title, .gh-repo-name, .lc-live-name { overflow-wrap: anywhere; }
+.glass-card { min-width: 0; }
+.dev-dashboard-grid, .insights-grid-layout, .metrics-grid, .journal-cards-grid { min-width: 0; }
+.metrics-grid { gap: var(--s3); }
+
+/* Tap targets */
+.btn-ghost-sm, .btn-icon, .btn-step { min-height: 44px; min-width: 44px; }
+.phone-bottom-nav, .mode-phone .phone-bottom-nav { width: min(calc(100% - 2 * var(--gutter)), calc(var(--shell) - 2 * var(--gutter))); }
+
+/* Landscape phones: keep the column, drop the extra bottom padding a little */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app-container { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
+#btn-reset-data { min-height: 44px; }
+.modal-header .btn-icon, #btn-close-create-modal, [id^="btn-close"] { min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; }
+/* Keep page titles clear of the decorative orb in the top-right corner */
+.screen-header:has(.orb-deco) > div:not(.orb-deco) .page-title { padding-right: 56px; }
+.screen-header:has(> .btn-pill, > .btn-primary, > .btn-icon) > div:not(.orb-deco) .page-title { padding-right: 0; }

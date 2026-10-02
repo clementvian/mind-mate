@@ -138,19 +138,19 @@
   }
 
   // --- View Mode ---
-  function applyViewMode(mode) {
+  function applyViewMode(mode, silent = false) {
     state.viewMode = mode;
     localStorage.setItem('mm_view_mode', mode);
     if (mode === 'phone') {
       appContainer.classList.remove('mode-desktop');
       appContainer.classList.add('mode-phone');
       frameIcon.innerHTML = `<rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>`;
-      showToast('Switched to Android Mobile View (Pixel 10 Frame)');
+      if (!silent) showToast('Switched to Android Mobile View (Pixel 10 Frame)');
     } else {
       appContainer.classList.remove('mode-phone');
       appContainer.classList.add('mode-desktop');
       frameIcon.innerHTML = `<rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>`;
-      showToast('Switched to Fluid Desktop Dashboard View');
+      if (!silent) showToast('Switched to Fluid Desktop Dashboard View');
     }
   }
 
@@ -1083,7 +1083,7 @@
   // --- Initialize App ---
   function init() {
     localStorage.removeItem('mm_theme');   // dark theme removed: drop any saved preference
-    applyViewMode(state.viewMode);
+    applyViewMode(state.viewMode, true);   // initial layout: no toast
     renderHubEntries();
     updateStudyLoggerUI();
     renderInsightsCharts();

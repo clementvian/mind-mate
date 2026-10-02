@@ -71,3 +71,30 @@ test('future dates are never marked absent', () => {
   assert.equal(attendance.statusFor('2026-10-02', null, { ...ctx, nowMin: 540 }), 'Pending');
   assert.equal(attendance.statusFor('2026-10-02', null, ctx), 'Absent');
 });
+
+// Real sheet layout: separate date/time columns, "rifd" header (typo), CAMERA rows matched by name.
+// The student view must show exactly the same day status and totals the teacher sees for that student.
+test('student and teacher views agree on the real sheet layout', async () => {
+  const sheet = [['date', 'time', 'name ', 'rifd', '', 'attendance'],
+    ['03/08/2026', '11:38:02', 'HEMANTH', '04A1B2', '1', 'Present'],
+    ['03/08/2026', '11:38:40', 'BHARUNESH', 'CAMERA', '0.81', 'Present'],
+    ['03/08/2026', '16:05:10', 'HEMANTH', '04:A1:B2', '1', 'Present'],
+    ['04/08/2026', '9:01:00', 'BRANESH', 'CC33', '1', 'Absent']];
+  global.fetch = async () => ({ ok: true, status: 200, text: async () => sheet.map(r => r.map(x => `"${x}"`).join(',')).join('\n') });
+  delete require.cache[require.resolve('../attendance-service')];
+  const svc = require('../attendance-service');
+  const teacher = await svc.getAttendance({ month: '2026-08', requester: { username: 'SABITHA', role: 'teacher' }, force: true });
+  assert.equal(teacher.meta.columns.rfid, 'rifd');
+  for (const t of teacher.profiles) {
+    const mine = await svc.getAttendance({ month: '2026-08', requester: { username: t.profileId, role: 'student' } });
+    assert.equal(mine.profiles.length, 1);
+    assert.deepStrictEqual(mine.profiles[0].days, t.days, `${t.profileId} days differ`);
+    assert.deepStrictEqual(mine.profiles[0].summary, t.summary, `${t.profileId} summary differs`);
+  }
+  const by = Object.fromEntries(teacher.profiles.map(p => [p.profileId, p]));
+  const day = (id, d) => by[id].days.find(x => x.date === d);
+  assert.equal(day('HEMANTH', '2026-08-03').checkIn, '11:38');
+  assert.equal(day('HEMANTH', '2026-08-03').checkOut, '16:05');
+  assert.equal(day('BHARUNESH', '2026-08-03').status, 'Present');      // camera row, matched by name
+  assert.notEqual(day('BRANESH', '2026-08-04').status, 'Present');     // row marked Absent is ignored
+});
