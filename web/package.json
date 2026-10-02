@@ -9,5 +9,11 @@
   },
   "keywords": ["mindmate", "mental-health", "productivity", "journal", "leetcode", "github"],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
 }
