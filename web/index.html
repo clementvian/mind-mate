@@ -107,9 +107,10 @@
           </div>
         </div>
         <div class="att-right">
-          <!-- Status badge: updated by refreshAttStatus() based on biometric tagged flag -->
-          <span id="att-status-indicator" class="att-pill">Not Tagged</span>
+          <span id="att-status-indicator" class="att-pill">Loading</span>
+          <button type="button" class="btn-ghost-sm" id="btn-refresh-attendance" aria-label="Refresh attendance">Refresh</button>
         </div>
+        <div id="school-att" class="school-att" aria-live="polite"></div>
         <div id="activity-rows" class="activity-rows" aria-label="Coding activity, last 14 days"></div>
       </div>
 

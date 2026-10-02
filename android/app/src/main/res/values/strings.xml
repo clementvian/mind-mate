@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MindMate</string>
+    <string name="title_activity_main">MindMate</string>
+    <string name="package_name">com.karthikeyan.mindmate</string>
+    <string name="custom_url_scheme">com.karthikeyan.mindmate</string>
+</resources>

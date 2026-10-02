@@ -11,7 +11,8 @@
   // Use sessionStorage as a same-tab flag to prevent redundant redirects
   // if the browser re-evaluates scripts on orientation/resize events.
   const SESSION = JSON.parse(localStorage.getItem('mm_session') || 'null');
-  if (!SESSION) {
+  if (!SESSION || !SESSION.token) {
+    localStorage.removeItem('mm_session');
     if (!sessionStorage.getItem('mm_redirecting')) {
       sessionStorage.setItem('mm_redirecting', '1');
       window.location.replace('/login.html');
@@ -1132,46 +1133,63 @@
       });
     }
 
-    // --- Attendance Status (biometric/RFID — read-only, driven by tagged flag) ---
-    // The ESP32 writes:  localStorage["mm_att_YYYY-MM-DD"][SESSION.user] = { tagged: true/false }
-    // or the server resolver sets the legacy string form ("present"/"absent").
-    // We normalise both formats here.
+    // --- Attendance (RFID taps from the Google Sheet, computed by the server) ---
     const attDateLabel = document.getElementById('att-date-label');
     const attStatusEl  = document.getElementById('att-status-indicator');
-    const todayStr = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-    if (attDateLabel) attDateLabel.textContent = todayStr;
+    const attPanel     = document.getElementById('school-att');
+    const attRefreshBtn = document.getElementById('btn-refresh-attendance');
+    if (attDateLabel) attDateLabel.textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'Asia/Kolkata' });
 
-    function refreshAttStatus() {
-      if (!SESSION || !attStatusEl) return;
-      const key = `mm_att_${new Date().toISOString().slice(0, 10)}`;
-      const rec = JSON.parse(localStorage.getItem(key) || '{}');
-      const entry = rec[SESSION.user];
+    function attSkeleton() {
+      if (attStatusEl) attStatusEl.textContent = 'Loading';
+      if (attPanel) attPanel.innerHTML = `<div class="att-skel-stats"><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span><span class="skeleton"></span></div><div class="att-strip skeleton"></div>`;
+    }
 
-      // Support both object form { tagged: true } and legacy string form "present"
-      const tagged =
-        (typeof entry === 'object' && entry !== null) ? !!entry.tagged :
-        (typeof entry === 'string')                   ? entry === 'present' :
-        false;
+    function attError(message) {
+      if (attStatusEl) attStatusEl.textContent = 'Unavailable';
+      if (attPanel) attPanel.innerHTML = `<p class="att-error" role="alert">${escapeHtml(message)} <button type="button" class="btn-ghost-sm" data-retry-attendance>Retry</button></p>`;
+    }
 
-      if (tagged) {
-        attStatusEl.textContent = 'Present';
-        attStatusEl.style.background = 'rgba(16,185,129,.15)';
-        attStatusEl.style.color = '#059669';
-        const card = document.getElementById('attendance-checkin-card');
-        if (card) { card.style.background = 'rgba(16,185,129,.09)'; card.style.borderColor = 'rgba(16,185,129,.35)'; }
-      } else {
-        attStatusEl.textContent = 'Absent';
-        attStatusEl.style.background = 'rgba(239,68,68,.1)';
-        attStatusEl.style.color = '#ef4444';
-        const card = document.getElementById('attendance-checkin-card');
-        if (card) { card.style.background = 'rgba(239,68,68,.05)'; card.style.borderColor = 'rgba(239,68,68,.18)'; }
+    function renderAttendance(data) {
+      const p = data.profiles && data.profiles[0];
+      if (!p) { attError('No attendance record found for your profile.'); return; }
+      const today = p.days.find(d => d.date === data.today);
+      if (attStatusEl) {
+        attStatusEl.textContent = today ? (today.status === 'Present' && today.checkIn ? `Present ${today.checkIn}` : today.status) : 'No data';
+        attStatusEl.dataset.status = today ? today.status : '';
+      }
+      const sm = p.summary;
+      const stat = (label, value) => `<div class="att-stat"><span class="att-stat-label">${label}</span><span class="att-stat-value">${value}</span></div>`;
+      const dots = p.days.map(d =>
+        `<span class="att-dot ${d.status === 'Present' ? 'on' : d.status === 'Absent' ? 'absent' : ''}" title="${d.date}: ${d.status}${d.checkIn ? ` (in ${d.checkIn}${d.checkOut && d.checkOut !== d.checkIn ? `, out ${d.checkOut}` : ''})` : ''}"></span>`).join('');
+      attPanel.innerHTML =
+        (p.linked ? '' : `<p class="att-note">No RFID card is linked to your profile yet, so no taps can be matched.</p>`) +
+        `<div class="att-stats">${stat('Present', sm.present)}${stat('Absent', sm.absent)}${stat('Attendance', sm.percentage === null ? 'N/A' : sm.percentage + '%')}${stat('Streak', sm.streak + (sm.streak === 1 ? ' day' : ' days'))}</div>` +
+        `<div class="att-strip" aria-label="Attendance this month">${dots}</div>` +
+        (today && today.checkIn ? `<p class="att-note">Today: in ${today.checkIn}${today.checkOut && today.checkOut !== today.checkIn ? `, out ${today.checkOut}` : ''}</p>` : '');
+    }
+
+    async function loadAttendance({ force = false } = {}) {
+      if (!attPanel) return;
+      attSkeleton();
+      if (attRefreshBtn) attRefreshBtn.disabled = true;
+      try {
+        const res = await fetch(`${window.API_BASE || ''}/api/school-attendance${force ? '?refresh=1' : ''}`, { headers: { Authorization: 'Bearer ' + SESSION.token } });
+        if (res.status === 401) { localStorage.removeItem('mm_session'); window.location.replace('/login.html'); return; }
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Could not load attendance');
+        renderAttendance(data);
+      } catch (err) {
+        attError(err.message || 'Could not load attendance');
+      } finally {
+        if (attRefreshBtn) attRefreshBtn.disabled = false;
       }
     }
 
-    refreshAttStatus();
-    // Poll every 10 s so badge updates live when ESP32 tags the student
-    setInterval(refreshAttStatus, 10000);
-
+    if (attRefreshBtn) attRefreshBtn.addEventListener('click', () => loadAttendance({ force: true }));
+    document.addEventListener('click', e => { if (e.target.closest('[data-retry-attendance]')) loadAttendance({ force: true }); });
+    loadAttendance();
+    setInterval(() => loadAttendance(), 2 * 60 * 1000);   // the server caches the sheet for 2 minutes
 
     // Fetch 100% Live LeetCode & GitHub Data
     refreshActivity();

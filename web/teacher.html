@@ -122,6 +122,12 @@
     .modal p{font-size:.87rem;color:var(--muted);margin-bottom:16px}
     .modal-journal{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-sm);padding:14px;font-size:.85rem;line-height:1.6;color:var(--text);margin-bottom:16px}
     .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+    .status-label.neutral{color:var(--muted);background:rgba(107,114,128,.12)}
+    .att-hint{font-size:.72rem;color:var(--muted);font-weight:400}
+    .att-error{color:var(--danger,#ef4444);font-size:.85rem;margin:8px 0}
+    .att-skeleton{display:flex;flex-direction:column;gap:8px;margin:8px 0}
+    .att-skeleton span{height:36px;border-radius:10px;background:linear-gradient(90deg,#eceef3 25%,#f7f8fb 50%,#eceef3 75%);background-size:200% 100%;animation:attsh 1.2s linear infinite}
+    @keyframes attsh{to{background-position:-200% 0}}
   </style>
 </head>
 <body>
@@ -182,17 +188,21 @@
     <div class="card-title">Attendance Tracker</div>
     <div class="att-header">
       <div class="date-selector">
-        <input type="date" id="att-date">
+        <input type="date" id="att-date" aria-label="Attendance date">
       </div>
-      <button class="btn-primary" id="btn-fetch-sheets">Fetch from Sheets</button>
-      <button class="btn-primary" id="btn-sync-sheets">Sync to Sheets</button>
+      <button class="btn-primary" id="btn-refresh-att">Refresh</button>
     </div>
 
-    <table class="att-table">
+    <div id="att-state" aria-live="polite"></div>
+
+    <table class="att-table" id="att-table">
       <thead>
         <tr>
-          <th>Student Name</th>
-          <th>Status</th>
+          <th>Student</th>
+          <th>Day</th>
+          <th>In</th>
+          <th>Out</th>
+          <th>Month</th>
           <th>Flag</th>
         </tr>
       </thead>
@@ -202,10 +212,19 @@
     <div class="sync-strip">
       <div class="sync-status">
         <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-msg">Last synced: Never</span>
+        <span id="sync-msg">Not loaded yet</span>
       </div>
-      <button class="btn-sm btn-resolve" id="btn-mark-all-present" style="padding:6px 14px">All Present</button>
+      <span class="att-hint">Taps come from the RFID sheet and cannot be edited here.</span>
     </div>
+  </div>
+
+  <!-- Taps from cards that are not linked to any profile -->
+  <div class="card full-width" id="unmatched-card" style="display:none">
+    <div class="card-title">Unmatched taps</div>
+    <table class="att-table">
+      <thead><tr><th>Card UID</th><th>Name in sheet</th><th>Taps</th><th>Last seen</th></tr></thead>
+      <tbody id="unmatched-body"></tbody>
+    </table>
   </div>
 
   <!-- Journal Alerts Log (full-width) -->
@@ -243,7 +262,7 @@
 //     redirects caused by script re-evaluation during layout reflows) ────────
 document.addEventListener('DOMContentLoaded', function() {
 const sess = JSON.parse(localStorage.getItem('mm_session')||'null');
-if (!sess || sess.role !== 'teacher') { window.location.replace('/login.html'); return; }
+if (!sess || sess.role !== 'teacher' || !sess.token) { localStorage.removeItem('mm_session'); window.location.replace('/login.html'); return; }
 document.getElementById('teacher-name').textContent = sess ? sess.name : 'Teacher';
 
 // ─── Google Sheets Integration ────────────────────────────────
@@ -255,80 +274,67 @@ async function pushToSheets(action, payload) {
   } catch(e) { return false; }
 }
 
-// ─── Real Student Profiles (biometric attendance system) ─────
-// Fields: user (login ID), name,
-//         rfidUid (RFID tag UID from ESP32), faceId (face-embedding ref)
+// ─── Students (ids match the login usernames; attendance itself comes from the server) ───
 const ALL_STUDENTS = [
-  { user:'STU-HEMANTH',   name:'Hemanth', rfidUid:'RFID-HEM-001', faceId:'FACE-HEM-001' },
-  { user:'STU-BHARUNESH', name:'Bharunesh', rfidUid:'RFID-BHA-002', faceId:'FACE-BHA-002' },
-  { user:'STU-BRANESH',   name:'Branesh', rfidUid:'RFID-BRN-003', faceId:'FACE-BRN-003' }
+  { user:'BHARUNESH', name:'Bharunesh' },
+  { user:'BRANESH',   name:'Branesh' },
+  { user:'HEMANTH',   name:'Hemanth' }
 ];
-
-// ─── ESP32 Attendance Event Resolver ─────────────────────────
-// Called when the ESP32/backend posts an attendance event with
-// an rfidUid or faceId. Resolves to the real student profile
-// and writes attendance keyed by their canonical user ID.
-function resolveAndLogBiometricEvent(payload) {
-  // payload: { rfidUid?, faceId?, status?, date? }
-  const date = payload.date || new Date().toISOString().slice(0, 10);
-  const st = ALL_STUDENTS.find(s =>
-    (payload.rfidUid && s.rfidUid === payload.rfidUid) ||
-    (payload.faceId  && s.faceId  === payload.faceId)
-  );
-  if (!st) { console.warn('[Biometric] Unknown identifier:', payload); return null; }
-  const key = `mm_att_${date}`;
-  const rec = JSON.parse(localStorage.getItem(key) || '{}');
-  rec[st.user] = payload.status || 'present';
-  localStorage.setItem(key, JSON.stringify(rec));
-  if (date === new Date().toISOString().slice(0, 10)) {
-    attendance[st.user] = rec[st.user];
-    saveAttendance();
-    renderAttendance();
-  }
-  return st;
-}
-// Expose for ESP32 backend webhook calls via postMessage or fetch:
-window.resolveBiometricAttendance = resolveAndLogBiometricEvent;
-
 const students = ALL_STUDENTS;
 document.getElementById('stat-students').textContent = students.length;
 
-// ─── Attendance State ─────────────────────────────────────────
-const attKey = () => `mm_att_${document.getElementById('att-date').value}`;
-let attendance = {}; // { STU001: 'present'|'absent' }
+// ─── Attendance from the RFID sheet (computed on the server, read-only here) ───
+const IST_TODAY = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+const dateInput = document.getElementById('att-date');
+dateInput.value = IST_TODAY;
+let attData = null;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-function loadAttendance() {
-  const saved = JSON.parse(localStorage.getItem(attKey())||'{}');
-  attendance = {};
-  students.forEach(s => { attendance[s.user] = saved[s.user] || 'absent'; });
-  renderAttendance();
-}
+function setState(html) { document.getElementById('att-state').innerHTML = html; }
 
-function saveAttendance() {
-  localStorage.setItem(attKey(), JSON.stringify(attendance));
-  updateStats();
-}
-
-function toggleAttendance(user) {
-  attendance[user] = attendance[user] === 'present' ? 'absent' : 'present';
-  saveAttendance();
-  renderAttendance();
+async function loadAttendance(force = false) {
+  const btn = document.getElementById('btn-refresh-att');
+  const month = (dateInput.value || IST_TODAY).slice(0, 7);
+  btn.disabled = true;
+  setState('<div class="att-skeleton"><span></span><span></span><span></span></div>');
+  try {
+    const r = await fetch(`${window.API_BASE || ''}/api/school-attendance?month=${month}${force ? '&refresh=1' : ''}`, { headers: { Authorization: 'Bearer ' + sess.token } });
+    if (r.status === 401) { localStorage.removeItem('mm_session'); window.location.replace('/login.html'); return; }
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'Could not load attendance');
+    attData = data;
+    setState(data.meta.stale ? `<p class="att-error">Showing the last saved data (${esc(data.meta.stale)}).</p>` : '');
+    document.getElementById('sync-dot').className = 'sync-dot';
+    document.getElementById('sync-msg').textContent = `Updated ${new Date(data.meta.fetchedAt).toLocaleTimeString()}${data.meta.cached ? ' (cached)' : ''}`;
+    renderAttendance();
+    renderUnmatched(data.unmatched || []);
+  } catch (e) {
+    attData = null;
+    document.getElementById('att-body').innerHTML = '';
+    document.getElementById('sync-dot').className = 'sync-dot err';
+    setState(`<p class="att-error" role="alert">${esc(e.message)} <button type="button" class="btn-sm btn-view" id="btn-retry-att">Retry</button></p>`);
+    document.getElementById('btn-retry-att').onclick = () => loadAttendance(true);
+    updateStats();
+  } finally { btn.disabled = false; }
 }
 
 function renderAttendance() {
   const body = document.getElementById('att-body');
+  if (!attData) return;
   const alerts = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
-  body.innerHTML = students.map(s => {
-    const status = attendance[s.user] || 'absent';
-    const hasAlert = alerts.some(a => a.studentUser === s.user && !a.resolved);
+  const date = dateInput.value;
+  body.innerHTML = attData.profiles.map(p => {
+    const day = p.days.find(d => d.date === date);
+    const status = day ? day.status : 'No data';
+    const cls = status === 'Present' ? 'present' : status === 'Absent' ? 'absent' : 'neutral';
+    const hasAlert = alerts.some(a => a.studentUser === p.profileId && !a.resolved);
+    const sm = p.summary;
     return `<tr>
-      <td style="font-weight:600">${s.name}</td>
-      <td>
-        <div class="status-toggle">
-          <button class="toggle ${status}" onclick="toggleAttendance('${s.user}')"></button>
-          <span class="status-label ${status}">${status==='present'?'Present':'Absent'}</span>
-        </div>
-      </td>
+      <td style="font-weight:600">${esc(p.name)}${p.linked ? '' : '<div class="att-hint">No card linked</div>'}</td>
+      <td><span class="status-label ${cls}">${esc(status)}</span></td>
+      <td>${day && day.checkIn ? esc(day.checkIn) : '—'}</td>
+      <td>${day && day.checkOut && day.checkOut !== day.checkIn ? esc(day.checkOut) : '—'}</td>
+      <td>${sm.present}P / ${sm.absent}A &middot; <strong>${sm.percentage === null ? 'N/A' : sm.percentage + '%'}</strong></td>
       <td>${hasAlert ? '<span class="alert-flag">Alert</span>' : '<span style="color:var(--muted);font-size:.78rem">—</span>'}</td>
     </tr>`;
   }).join('');
@@ -336,66 +342,26 @@ function renderAttendance() {
 }
 
 function updateStats() {
-  const p = Object.values(attendance).filter(v=>v==='present').length;
-  const a = Object.values(attendance).filter(v=>v==='absent').length;
-  document.getElementById('stat-present').textContent = p;
-  document.getElementById('stat-absent').textContent = a;
+  const date = dateInput.value;
+  const days = attData ? attData.profiles.map(p => p.days.find(d => d.date === date)) : [];
+  document.getElementById('stat-present').textContent = days.filter(d => d && d.status === 'Present').length;
+  document.getElementById('stat-absent').textContent = days.filter(d => d && d.status === 'Absent').length;
 }
 
-document.getElementById('btn-mark-all-present').onclick = () => {
-  students.forEach(s => attendance[s.user] = 'present');
-  saveAttendance(); renderAttendance();
-  showToast('All students marked present','success');
-};
+function renderUnmatched(list) {
+  const card = document.getElementById('unmatched-card');
+  card.style.display = list.length ? '' : 'none';
+  document.getElementById('unmatched-body').innerHTML = list.map(u =>
+    `<tr><td><code>${esc(u.uid)}</code></td><td>${esc(u.name || '—')}</td><td>${u.taps}</td><td>${esc(u.lastSeen)}</td></tr>`).join('');
+}
 
-// Date picker default = today
-const todayStr = new Date().toISOString().slice(0,10);
-document.getElementById('att-date').value = todayStr;
-document.getElementById('att-date').onchange = loadAttendance;
+dateInput.onchange = () => {
+  // Same month: just re-render. Different month: fetch that month.
+  if (attData && dateInput.value.slice(0, 7) === attData.month) { renderAttendance(); } else { loadAttendance(); }
+};
+document.getElementById('btn-refresh-att').onclick = () => loadAttendance(true);
 loadAttendance();
-
-// ─── Google Sheets Sync ───────────────────────────────────────
-document.getElementById('btn-sync-sheets').onclick = async () => {
-  const btn = document.getElementById('btn-sync-sheets');
-  btn.disabled = true; btn.textContent = 'Syncing…';
-  const date = document.getElementById('att-date').value;
-  const rows = students.map(s => ({
-    date, studentId: s.user, name: s.name,
-    status: attendance[s.user]||'absent',
-    teacher: sess.name
-  }));
-  const ok = await pushToSheets('attendance', { rows });
-  document.getElementById('sync-msg').textContent = `Last synced: ${new Date().toLocaleTimeString()}`;
-  document.getElementById('sync-dot').className = 'sync-dot ' + (ok?'':'err');
-  btn.disabled = false; btn.textContent = 'Sync to Sheets';
-  showToast(ok ? 'Attendance synced to Google Sheets!' : 'Sync sent (check Sheets)', ok?'success':'');
-};
-
-// ─── Fetch attendance from Google Sheets (API key stays on the server) ───
-document.getElementById('btn-fetch-sheets').onclick = async () => {
-  const btn = document.getElementById('btn-fetch-sheets');
-  btn.disabled = true; btn.textContent = 'Fetching…';
-  try {
-    const date = document.getElementById('att-date').value;
-    const r = await fetch('/api/attendance?date=' + encodeURIComponent(date));
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Request failed');
-    const pick = (rec, ...names) => { for (const n of names) { const k = Object.keys(rec).find(x => x.toLowerCase() === n.toLowerCase()); if (k && rec[k]) return rec[k]; } return ''; };
-    let matched = 0;
-    data.records.forEach(rec => {
-      const id = pick(rec, 'studentId', 'user', 'id');
-      const st = students.find(s => s.user === id);
-      if (!st) return;
-      attendance[st.user] = pick(rec, 'status').toLowerCase() === 'present' ? 'present' : 'absent';
-      matched++;
-    });
-    saveAttendance(); renderAttendance();
-    showToast(`Loaded ${matched} attendance record(s) from Sheets`, 'success');
-  } catch (e) {
-    showToast('' + e.message);
-  }
-  btn.disabled = false; btn.textContent = 'Fetch from Sheets';
-};
+setInterval(() => loadAttendance(), 2 * 60 * 1000);   // server caches the sheet for 2 minutes
 
 // ─── Vulnerability Alerts ─────────────────────────────────────
 function loadAlerts() {

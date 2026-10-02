@@ -29,6 +29,8 @@ const MIME_TYPES = {
 
 const https = require('https');
 const activity = require('./activity-service');
+const auth = require('./auth');
+const attendance = require('./attendance-service');
 
 // GET /api/sheets?action=...&data=...  →  forwards to the Apps Script web app (URL stays server-side)
 function forwardToAppsScript(target, res, redirectsLeft) {
@@ -66,37 +68,21 @@ function handleBiometricPost(req, res) {
       res.end(JSON.stringify({ error: 'Invalid JSON body' }));
       return;
     }
-    // TODO: look up the student by body.rfidUid / body.faceId (see STUDENTS) and write the row to the sheet.
+    // TODO: look up the student by body.rfidUid / body.faceId and write the row to the sheet.
     res.writeHead(200, headers);
     res.end(JSON.stringify({ ok: true, received: body }));
   });
 }
 
-// GET /api/attendance?date=YYYY-MM-DD  →  rows from the Google Sheet (as objects keyed by header)
-function fetchAttendanceFromSheet(date, res) {
-  const json = (code, obj) => {
-    res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
-    res.end(JSON.stringify(obj));
-  };
-  const { GOOGLE_API_KEY, GOOGLE_SHEET_ID, GOOGLE_SHEET_RANGE = 'A:Z' } = process.env;
-  if (!GOOGLE_API_KEY || !GOOGLE_SHEET_ID) {
-    return json(500, { error: 'Set GOOGLE_API_KEY and GOOGLE_SHEET_ID in web/.env' });
-  }
-  const sheetPath = `/v4/spreadsheets/${encodeURIComponent(GOOGLE_SHEET_ID)}/values/${encodeURIComponent(GOOGLE_SHEET_RANGE)}?key=${encodeURIComponent(GOOGLE_API_KEY)}`;
-  https.get({ hostname: 'sheets.googleapis.com', path: sheetPath, headers: { 'Accept': 'application/json' } }, apiRes => {
-    let body = '';
-    apiRes.on('data', c => body += c);
-    apiRes.on('end', () => {
-      let data;
-      try { data = JSON.parse(body); } catch (e) { return json(502, { error: 'Bad response from Google Sheets' }); }
-      if (apiRes.statusCode !== 200) return json(apiRes.statusCode, { error: (data.error && data.error.message) || 'Sheets API error' });
-      const [header = [], ...rows] = data.values || [];
-      const keys = header.map(h => String(h).trim());
-      let records = rows.map(r => Object.fromEntries(keys.map((k, i) => [k, r[i] || ''])));
-      if (date) records = records.filter(r => String(r.date || r.Date || '').slice(0, 10) === date);
-      json(200, { records });
-    });
-  }).on('error', err => json(502, { error: err.message }));
+function sendJson(res, code, obj) {
+  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+  res.end(JSON.stringify(obj));
+}
+
+function readJsonBody(req, cb) {
+  let raw = '';
+  req.on('data', chunk => { raw += chunk; if (raw.length > 1e5) req.destroy(); });
+  req.on('end', () => { try { cb(null, JSON.parse(raw || '{}')); } catch (e) { cb(e); } });
 }
 
 const server = http.createServer((req, res) => {
@@ -108,6 +94,30 @@ const server = http.createServer((req, res) => {
       'Access-Control-Allow-Headers': 'Content-Type'
     });
     res.end();
+    return;
+  }
+
+  // POST /api/login  { username, password }  →  { token, user }
+  if (req.method === 'POST' && req.url.startsWith('/api/login')) {
+    readJsonBody(req, (err, body) => {
+      if (err) return sendJson(res, 400, { error: 'Invalid request' });
+      const ip = req.socket.remoteAddress || '';
+      auth.login(body.username, body.password, ip).then(r => {
+        if (!r.ok) return sendJson(res, r.status, { error: r.error });
+        sendJson(res, 200, { token: r.token, user: r.user });
+      }, () => sendJson(res, 500, { error: 'Login failed' }));
+    });
+    return;
+  }
+
+  // GET /api/school-attendance?month=YYYY-MM&refresh=1  — RFID attendance computed from the Google Sheet
+  // Students receive only their own record; teachers receive every student plus unmatched taps.
+  if (req.method === 'GET' && req.url.startsWith('/api/school-attendance')) {
+    const me = auth.userFromRequest(req);
+    if (!me) return sendJson(res, 401, { error: 'Please sign in again' });
+    const q = new URL(req.url, 'http://localhost').searchParams;
+    attendance.getAttendance({ month: q.get('month'), requester: me, force: q.get('refresh') === '1' })
+      .then(v => sendJson(res, 200, v), e => sendJson(res, e.status && e.status >= 400 && e.status < 600 ? e.status : 502, { error: e.message }));
     return;
   }
 
@@ -127,13 +137,6 @@ const server = http.createServer((req, res) => {
   // POST /api/attendance/biometric  — ESP32 sends rfidUid or faceId, resolved to real student
   if (req.method === 'POST' && req.url.startsWith('/api/attendance/biometric')) {
     handleBiometricPost(req, res);
-    return;
-  }
-
-  // GET /api/attendance?date=YYYY-MM-DD  — fetch rows from Google Sheet
-  if (req.url.startsWith('/api/attendance')) {
-    const date = new URL(req.url, 'http://localhost').searchParams.get('date') || '';
-    fetchAttendanceFromSheet(date, res);
     return;
   }
 

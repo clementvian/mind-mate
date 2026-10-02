@@ -1,5 +1,13 @@
 {
-  "appId": "com.example.app",
-  "appName": "mindmate",
-  "webDir": "www"
+  "appId": "com.karthikeyan.mindmate",
+  "appName": "MindMate",
+  "webDir": "www",
+  "server": {
+    "url": "https://mind-mate-2.onrender.com/login.html",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
 }

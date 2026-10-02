@@ -23,12 +23,6 @@
     .logo-badge{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--primary);color:#fff;margin-left:4px;vertical-align:middle}
     h2{font-size:1.35rem;font-weight:700;color:var(--text);margin-bottom:4px}
     .sub{font-size:.9rem;color:var(--muted);margin-bottom:26px}
-    .roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
-    .role-btn{padding:14px 10px;border-radius:14px;border:2px solid transparent;background:rgba(139,92,246,.06);cursor:pointer;transition:all .22s;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--f);color:var(--muted);font-size:.85rem;font-weight:600}
-    .role-btn .ri{font-size:28px}
-    .role-btn.teacher.active{border-color:var(--teacher);background:rgba(245,158,11,.1);color:var(--teacher);box-shadow:0 0 0 4px var(--tg)}
-    .role-btn.student.active{border-color:var(--student);background:rgba(16,185,129,.1);color:var(--student);box-shadow:0 0 0 4px var(--sg)}
-    .role-btn:hover{transform:translateY(-2px)}
     .fg{margin-bottom:16px}
     label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
     input{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid var(--border);background:rgba(255,255,255,.6);font-family:var(--f);font-size:.95rem;color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
@@ -37,28 +31,10 @@
     .err.show{display:block}
     .btn{width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;font-family:var(--f);font-size:1rem;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--ph));box-shadow:0 6px 24px var(--pg);transition:all .22s;margin-top:8px}
     .btn.t{background:linear-gradient(135deg,var(--teacher),var(--th));box-shadow:0 6px 24px var(--tg)}
-    .btn.s{background:linear-gradient(135deg,var(--student),var(--sh));box-shadow:0 6px 24px var(--sg)}
     .btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
     .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
     .spinner{display:inline-block;width:16px;height:16px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--muted);font-size:.78rem}
-    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
-    .demo{font-size:.78rem;color:var(--muted);background:rgba(139,92,246,.06);border-radius:14px;padding:14px;line-height:1.6}
-    .demo-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
-    .demo-list{display:flex;flex-direction:column;gap:8px}
-    .demo-card{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.75);border:1px solid var(--border);border-radius:10px;padding:8px 12px;cursor:pointer;transition:all .2s;text-align:left}
-    .demo-card:hover{background:rgba(255,255,255,.98);transform:translateY(-1px)}
-    .demo-card.t:hover{border-color:var(--teacher);box-shadow:0 4px 12px var(--tg)}
-    .demo-card.s:hover{border-color:var(--student);box-shadow:0 4px 12px var(--sg)}
-    .demo-info{display:flex;flex-direction:column;gap:2px}
-    .demo-name{font-size:.82rem;font-weight:700;color:var(--text)}
-    .demo-cred{font-size:.74rem;color:var(--muted)}
-    .demo-cred code{background:rgba(139,92,246,.12);padding:1px 6px;border-radius:4px;color:var(--text);font-weight:600}
-    .demo-pill{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:99px;transition:all .2s}
-    .demo-card.t .demo-pill{background:rgba(245,158,11,.15);color:var(--teacher)}
-    .demo-card.s .demo-pill{background:rgba(16,185,129,.15);color:var(--student)}
-    .demo-card:hover .demo-pill{filter:brightness(0.95)}
   </style>
 </head>
 <body>
@@ -72,158 +48,51 @@
     <h2>Welcome back</h2>
     <p class="sub">Sign in to your classroom workspace</p>
 
-    <div class="roles">
-      <button type="button" class="role-btn teacher active" id="r-teacher" onclick="setRole('teacher')">Teacher</button>
-      <button type="button" class="role-btn student" id="r-student" onclick="setRole('student')">Student</button>
-    </div>
-
     <form id="lf">
-      <div class="fg"><label for="lu">Username / Student ID</label><input id="lu" type="text" placeholder="e.g. teacher1 or STU-HEMANTH" required autocomplete="username"></div>
-      <div class="fg"><label for="lp">Password</label><input id="lp" type="password" placeholder="Enter your password" required autocomplete="current-password"></div>
-      <div class="err" id="err">Invalid credentials. Please try again or click a demo account below.</div>
-      <button type="submit" class="btn t" id="sbtn">Sign In as Teacher</button>
+      <div class="fg"><label for="lu">Username</label><input id="lu" type="text" required autocomplete="username" autocapitalize="off" spellcheck="false"></div>
+      <div class="fg"><label for="lp">Password</label><input id="lp" type="password" required autocomplete="current-password"></div>
+      <div class="err" id="err" role="alert">Invalid username or password</div>
+      <button type="submit" class="btn t" id="sbtn">Sign In</button>
     </form>
-
-    <div class="divider">quick demo sign in (click to fill)</div>
-    <div class="demo" id="demo"></div>
   </div>
 
 <script>
-const ACCOUNTS = {
-  teacher: [
-    { user:'teacher1', pass:'teach123',   name:'Ms. Priya Sharma' },
-    { user:'teacher',  pass:'teach123',   name:'Ms. Priya Sharma' },
-    { user:'teacher1', pass:'teacher123', name:'Ms. Priya Sharma' },
-    { user:'teacher',  pass:'teacher123', name:'Ms. Priya Sharma' },
-    { user:'admin',    pass:'admin123',   name:'Mr. Rajan Kumar' },
-    { user:'admin',    pass:'admin',      name:'Mr. Rajan Kumar' }
-  ],
-  student: [
-    { user:'STU-HEMANTH',  pass:'stu123', name:'Hemanth',   rfidUid:'RFID-HEM-001', faceId:'FACE-HEM-001' },
-    { user:'STU-BHARUNESH',pass:'stu123', name:'Bharunesh', rfidUid:'RFID-BHA-002', faceId:'FACE-BHA-002' },
-    { user:'STU-BRANESH',  pass:'stu123', name:'Branesh',   rfidUid:'RFID-BRN-003', faceId:'FACE-BRN-003' }
-  ]
-};
-
-// Role
-let role = 'teacher';
-
-function fillCreds(u, p, r) {
-  setRole(r);
-  const lu = document.getElementById('lu');
-  const lp = document.getElementById('lp');
-  lu.value = u;
-  lp.value = p;
-  document.getElementById('err').classList.remove('show');
-  lu.focus();
-}
-window.fillCreds = fillCreds;
-
-function renderDemo() {
-  const container = document.getElementById('demo');
-  if (role === 'teacher') {
-    container.innerHTML = `
-      <div class="demo-title"><span>Teacher Credentials</span><span>Click to fill</span></div>
-      <div class="demo-list">
-        <div class="demo-card t" onclick="fillCreds('teacher1', 'teach123', 'teacher')">
-          <div class="demo-info">
-            <span class="demo-name">Ms. Priya Sharma</span>
-            <span class="demo-cred"><code>teacher1</code> / <code>teach123</code></span>
-          </div>
-          <span class="demo-pill">Fill ↵</span>
-        </div>
-        <div class="demo-card t" onclick="fillCreds('admin', 'admin123', 'teacher')">
-          <div class="demo-info">
-            <span class="demo-name">Mr. Rajan Kumar</span>
-            <span class="demo-cred"><code>admin</code> / <code>admin123</code></span>
-          </div>
-          <span class="demo-pill">Fill ↵</span>
-        </div>
-      </div>`;
-  } else {
-    container.innerHTML = `
-      <div class="demo-title"><span>Student Credentials</span><span>Click to fill</span></div>
-      <div class="demo-list">
-        <div class="demo-card s" onclick="fillCreds('STU-HEMANTH', 'stu123', 'student')">
-          <div class="demo-info">
-            <span class="demo-name">Hemanth</span>
-            <span class="demo-cred"><code>STU-HEMANTH</code> / <code>stu123</code></span>
-          </div>
-          <span class="demo-pill">Fill ↵</span>
-        </div>
-        <div class="demo-card s" onclick="fillCreds('STU-BHARUNESH', 'stu123', 'student')">
-          <div class="demo-info">
-            <span class="demo-name">Bharunesh</span>
-            <span class="demo-cred"><code>STU-BHARUNESH</code> / <code>stu123</code></span>
-          </div>
-          <span class="demo-pill">Fill ↵</span>
-        </div>
-        <div class="demo-card s" onclick="fillCreds('STU-BRANESH', 'stu123', 'student')">
-          <div class="demo-info">
-            <span class="demo-name">Branesh</span>
-            <span class="demo-cred"><code>STU-BRANESH</code> / <code>stu123</code></span>
-          </div>
-          <span class="demo-pill">Fill ↵</span>
-        </div>
-      </div>`;
-  }
-}
-
-function setRole(r) {
-  role = r;
-  document.getElementById('r-teacher').classList.toggle('active', r==='teacher');
-  document.getElementById('r-student').classList.toggle('active', r==='student');
-  const b = document.getElementById('sbtn');
-  b.className = 'btn ' + (r==='teacher'?'t':'s');
-  b.textContent = r==='teacher'?'Sign In as Teacher':'Sign In as Student';
-  renderDemo();
-}
-window.setRole = setRole;
-
-// Login submission with smart role auto-detection
 document.getElementById('lf').addEventListener('submit', async e => {
   e.preventDefault();
-  const u = document.getElementById('lu').value.trim();
-  const p = document.getElementById('lp').value.trim();
+  const username = document.getElementById('lu').value.trim();
+  const password = document.getElementById('lp').value;
   const btn = document.getElementById('sbtn');
   const err = document.getElementById('err');
   err.classList.remove('show');
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Signing in…';
-  await new Promise(r=>setTimeout(r,400));
-
-  let detectedRole = role;
-  // First search in selected role
-  let found = ACCOUNTS[detectedRole].find(a => a.user.toLowerCase() === u.toLowerCase() && a.pass === p);
-
-  // If not found, check the other role to prevent accidental tab mismatch
-  if (!found) {
-    const otherRole = role === 'teacher' ? 'student' : 'teacher';
-    const foundOther = ACCOUNTS[otherRole].find(a => a.user.toLowerCase() === u.toLowerCase() && a.pass === p);
-    if (foundOther) {
-      detectedRole = otherRole;
-      found = foundOther;
-      setRole(detectedRole);
+  try {
+    const res = await fetch((window.API_BASE || '') + '/api/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      err.textContent = res.status === 429 ? 'Too many attempts. Please try again later.' : 'Invalid username or password';
+      err.classList.add('show');
+      return;
     }
-  }
-
-  if (!found) {
+    localStorage.setItem('mm_session', JSON.stringify({
+      role: data.user.role, user: data.user.username, name: data.user.name, token: data.token, loginAt: Date.now()
+    }));
+    window.location.href = data.user.role === 'teacher' ? '/teacher.html' : '/index.html';
+  } catch (e2) {
+    err.textContent = 'Unable to sign in. Check your connection and try again.';
     err.classList.add('show');
+  } finally {
     btn.disabled = false;
-    btn.textContent = role==='teacher'?'Sign In as Teacher':'Sign In as Student';
-    return;
+    btn.textContent = 'Sign In';
   }
-
-  localStorage.setItem('mm_session', JSON.stringify({role: detectedRole, ...found, loginAt:Date.now()}));
-  window.location.href = detectedRole==='teacher' ? '/teacher.html' : '/index.html';
 });
 
-// Render initial demo cards
-renderDemo();
-
-// Already logged in guard
-const sess = JSON.parse(localStorage.getItem('mm_session')||'null');
-if (sess) window.location.href = sess.role==='teacher'?'/teacher.html':'/index.html';
+// Already signed in
+const sess = JSON.parse(localStorage.getItem('mm_session') || 'null');
+if (sess && sess.token) window.location.href = sess.role === 'teacher' ? '/teacher.html' : '/index.html';
 </script>
 </body>
 </html>

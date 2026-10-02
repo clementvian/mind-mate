@@ -1,0 +1,32 @@
+[
+  {
+    "username": "BHARUNESH",
+    "name": "Bharunesh",
+    "role": "student",
+    "passwordHash": "$2b$12$zM0yTM9AkHdBupq078S/y.g0gd02D.uHdmZLe4fM/xJqfhZ0yMcka"
+  },
+  {
+    "username": "BRANESH",
+    "name": "Branesh",
+    "role": "student",
+    "passwordHash": "$2b$12$Jig2cyeGH8ujwlWofjJ1K.Ar5go1KKoCdJ0L/pU1psD8Xkxdj/W8q"
+  },
+  {
+    "username": "HEMANTH",
+    "name": "Hemanth",
+    "role": "student",
+    "passwordHash": "$2b$12$7ziQN8kbqHm1/RV5MUjeieozQThmCpdFZejGY4CutXTQrp0CSL/5i"
+  },
+  {
+    "username": "SABITHA",
+    "name": "Sabitha",
+    "role": "teacher",
+    "passwordHash": "$2b$12$Wb27SW5ocm67V7hZl.FoQ.3L7i1CR1ruOG/UT5.emj.a9bFcqdo4m"
+  },
+  {
+    "username": "ANNIE",
+    "name": "Annie",
+    "role": "teacher",
+    "passwordHash": "$2b$12$T8Btghn33rQvnfkDOydA0OwXVv63S9jeMlYfmxLk2COrSrW4wXxCG"
+  }
+]
