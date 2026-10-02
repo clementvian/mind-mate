@@ -7,13 +7,21 @@
     "dev": "node server.js",
     "start": "node server.js"
   },
-  "keywords": ["mindmate", "mental-health", "productivity", "journal", "leetcode", "github"],
+  "keywords": [
+    "mindmate",
+    "mental-health",
+    "productivity",
+    "journal",
+    "leetcode",
+    "github"
+  ],
   "author": "",
   "license": "ISC",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
-    "bcryptjs": "^3.0.3"
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.2.3"
   }
 }
