@@ -193,11 +193,7 @@
     entriesCountPill.textContent = `${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'}`;
 
     if (filtered.length === 0) {
-      hubEntriesList.innerHTML = `
-        <div class="glass-card" style="padding: 24px; text-align: center; color: var(--text-secondary);">
-          <p>No reflections recorded for "${state.currentFilter}".</p>
-        </div>
-      `;
+      hubEntriesList.innerHTML = MM.emptyState(`No reflections recorded for "${state.currentFilter}".`);
       return;
     }
 
@@ -399,33 +395,9 @@
     }
   }
 
-  // --- Date strip (Study screen) ---
-  function renderDateStrip() {
-    const strip = document.getElementById('date-strip');
-    if (!strip) return;
-    const today = new Date();
-    strip.innerHTML = Array.from({ length: 14 }, (_, i) => {
-      const d = new Date(today); d.setDate(today.getDate() - 6 + i);
-      const sel = i === 6;
-      return `<button type="button" class="date-chip${sel ? ' active' : ''}" role="tab" aria-selected="${sel}">
-        <span class="dow">${d.toLocaleDateString('en-US', { weekday: 'short' })}</span>
-        <span class="dom">${d.getDate()}</span>
-      </button>`;
-    }).join('');
-    strip.addEventListener('click', e => {
-      const chip = e.target.closest('.date-chip');
-      if (!chip) return;
-      strip.querySelectorAll('.date-chip').forEach(c => { c.classList.toggle('active', c === chip); c.setAttribute('aria-selected', c === chip); });
-    });
-    centerDateStrip();
-  }
-
-  // The Study screen is hidden at init (offsets are 0), so this also runs when it is opened.
-  function centerDateStrip() {
-    const strip = document.getElementById('date-strip');
-    const active = strip && strip.querySelector('.active');
-    if (active && strip.clientWidth) strip.scrollLeft = active.offsetLeft - strip.clientWidth / 2 + active.offsetWidth / 2;
-  }
+  // --- Date strip (Study screen): shared component ---
+  function renderDateStrip() { MM.dateStrip(document.getElementById('date-strip')); }
+  function centerDateStrip() { MM.centerDateStrip(document.getElementById('date-strip')); }
 
   // --- Schedule Rendering ---
   function renderScheduleTimeline() {
@@ -1124,14 +1096,7 @@
       if (streakBadge) streakBadge.textContent = `${state.journalEntries.length}-Entry Journal`;
     }
 
-    // --- Sign Out ---
-    const signOutBtn = document.getElementById('btn-signout');
-    if (signOutBtn) {
-      signOutBtn.addEventListener('click', () => {
-        localStorage.removeItem('mm_session');
-        window.location.href = '/login.html';
-      });
-    }
+    // Sign out is handled by MM.logout() (shared.js) via the button's data-signout attribute.
 
     // --- Attendance (RFID taps from the Google Sheet, computed by the server) ---
     const attDateLabel = document.getElementById('att-date-label');
@@ -1158,15 +1123,7 @@
         attStatusEl.textContent = today ? (today.status === 'Present' && today.checkIn ? `Present ${today.checkIn}` : today.status) : 'No data';
         attStatusEl.dataset.status = today ? today.status : '';
       }
-      const sm = p.summary;
-      const stat = (label, value) => `<div class="att-stat"><span class="att-stat-label">${label}</span><span class="att-stat-value">${value}</span></div>`;
-      const dots = p.days.map(d =>
-        `<span class="att-dot ${d.status === 'Present' ? 'on' : d.status === 'Absent' ? 'absent' : ''}" title="${d.date}: ${d.status}${d.checkIn ? ` (in ${d.checkIn}${d.checkOut && d.checkOut !== d.checkIn ? `, out ${d.checkOut}` : ''})` : ''}"></span>`).join('');
-      attPanel.innerHTML =
-        (p.linked ? '' : `<p class="att-note">No RFID card is linked to your profile yet, so no taps can be matched.</p>`) +
-        `<div class="att-stats">${stat('Present', sm.present)}${stat('Absent', sm.absent)}${stat('Attendance', sm.percentage === null ? 'N/A' : sm.percentage + '%')}${stat('Streak', sm.streak + (sm.streak === 1 ? ' day' : ' days'))}</div>` +
-        `<div class="att-strip" aria-label="Attendance this month">${dots}</div>` +
-        (today && today.checkIn ? `<p class="att-note">Today: in ${today.checkIn}${today.checkOut && today.checkOut !== today.checkIn ? `, out ${today.checkOut}` : ''}</p>` : '');
+      attPanel.innerHTML = MM.attendanceSummary(p, data.today);
     }
 
     async function loadAttendance({ force = false } = {}) {
@@ -1174,11 +1131,7 @@
       attSkeleton();
       if (attRefreshBtn) attRefreshBtn.disabled = true;
       try {
-        const res = await fetch(`${window.API_BASE || ''}/api/school-attendance${force ? '?refresh=1' : ''}`, { headers: { Authorization: 'Bearer ' + SESSION.token } });
-        if (res.status === 401) { localStorage.removeItem('mm_session'); window.location.replace('/login.html'); return; }
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Could not load attendance');
-        renderAttendance(data);
+        renderAttendance(await MM.fetchAttendance({ force }));
       } catch (err) {
         attError(err.message || 'Could not load attendance');
       } finally {

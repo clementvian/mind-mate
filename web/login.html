@@ -49,8 +49,8 @@
     <p class="sub">Sign in to your classroom workspace</p>
 
     <form id="lf">
-      <div class="fg"><label for="lu">Username</label><input id="lu" type="text" required autocomplete="username" autocapitalize="off" spellcheck="false"></div>
-      <div class="fg"><label for="lp">Password</label><input id="lp" type="password" required autocomplete="current-password"></div>
+      <div class="fg"><label for="lu">Username</label><input id="lu" type="text" required autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+      <div class="fg"><label for="lp">Password</label><input id="lp" type="password" required autocomplete="new-password"></div>
       <div class="err" id="err" role="alert">Invalid username or password</div>
       <button type="submit" class="btn t" id="sbtn">Sign In</button>
     </form>
@@ -89,6 +89,9 @@ document.getElementById('lf').addEventListener('submit', async e => {
     btn.textContent = 'Sign In';
   }
 });
+
+// Always show empty fields (also when this page is restored from the back/forward cache)
+window.addEventListener('pageshow', () => { document.getElementById('lf').reset(); document.getElementById('err').classList.remove('show'); });
 
 // Already signed in
 const sess = JSON.parse(localStorage.getItem('mm_session') || 'null');

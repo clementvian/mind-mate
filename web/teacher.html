@@ -2,526 +2,148 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MindMate — Teacher Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>MindMate — Teacher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="mobile.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%237A62C4'/></svg>">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --p:#8b5cf6;--ph:#7c3aed;--pg:rgba(139,92,246,.35);
-      --warn:#f59e0b;--danger:#ef4444;--success:#10b981;--info:#3b82f6;
-      --bg:#f8f6fc;--card:rgba(255,255,255,.88);--border:rgba(139,92,246,.15);
-      --text:#1f1f1f;--muted:#6b7280;--f:'Outfit',system-ui,sans-serif;
-      --r-sm:10px;--r-md:18px;--r-lg:26px;--r-full:9999px;
-    }
-    body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s}
-    .glow{position:fixed;border-radius:50%;filter:blur(90px);opacity:.25;pointer-events:none;animation:drift 14s ease-in-out infinite alternate}
-    .g1{width:500px;height:500px;background:radial-gradient(circle,#8b5cf6,transparent 70%);top:-100px;left:-120px}
-    .g2{width:350px;height:350px;background:radial-gradient(circle,#f59e0b,transparent 70%);bottom:-80px;right:-80px;animation-delay:-6s}
-    @keyframes drift{from{transform:translateY(0)}to{transform:translateY(-25px)}}
-
-    /* Header */
-    .header{background:var(--card);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 28px;height:66px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(139,92,246,.06)}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);display:grid;place-items:center;font-size:18px}
-    .brand-name{font-size:1.2rem;font-weight:800;color:var(--text)}
-    .brand-role{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:rgba(245,158,11,.15);color:var(--warn);margin-left:6px}
-    .hdr-right{display:flex;align-items:center;gap:12px}
-    .teacher-info{text-align:right}
-    .teacher-name{font-size:.9rem;font-weight:700;color:var(--text)}
-    .btn-icon{background:var(--card);border:1px solid var(--border);border-radius:var(--r-full);padding:8px 14px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text);transition:all .2s}
-    .btn-icon:hover{background:rgba(139,92,246,.08);color:var(--p)}
-
-    /* Alert Badge */
-    .alert-badge{background:var(--danger);color:#fff;border-radius:var(--r-full);font-size:.7rem;font-weight:800;padding:2px 7px;margin-left:6px;animation:pulse 1.5s infinite}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
-
-    /* Main Layout */
-    .main{max-width:1280px;margin:0 auto;padding:28px 24px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
-    @media(max-width:900px){.main{grid-template-columns:1fr}}
-    .full-width{grid-column:1/-1}
-
-    /* Cards */
-    .card{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:0 8px 32px rgba(139,92,246,.06)}
-    .card-title{font-size:1rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:18px}
-    .card-title .icon{font-size:18px}
-
-    /* Stats Row */
-    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-    @media(max-width:700px){.stats-row{grid-template-columns:1fr 1fr}}
-    .stat-card{background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--r-md);padding:20px;text-align:center;box-shadow:0 4px 16px rgba(139,92,246,.04)}
-    .stat-num{font-size:2rem;font-weight:800;line-height:1}
-    .stat-label{font-size:.78rem;color:var(--muted);margin-top:4px;font-weight:500}
-    .stat-card.alert-card .stat-num{color:var(--danger)}
-    .stat-card.present-card .stat-num{color:var(--success)}
-    .stat-card.absent-card .stat-num{color:var(--warn)}
-    .stat-card.total-card .stat-num{color:var(--p)}
-
-    /* Alert Items */
-    .alert-list{display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto}
-    .alert-list::-webkit-scrollbar{width:4px} .alert-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
-    .alert-item{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-md);padding:16px;position:relative;transition:all .2s}
-    .alert-item:hover{border-color:rgba(239,68,68,.4);box-shadow:0 4px 16px rgba(239,68,68,.1)}
-    .alert-item.resolved{background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.2);opacity:.7}
-    .alert-student{font-size:.85rem;font-weight:700;color:var(--danger);display:flex;align-items:center;gap:6px}
-    .alert-item.resolved .alert-student{color:var(--success)}
-    .alert-time{font-size:.72rem;color:var(--muted);margin-top:2px}
-    .alert-snippet{font-size:.82rem;color:var(--text);margin-top:8px;line-height:1.5;background:rgba(239,68,68,.04);border-radius:8px;padding:8px 10px;border-left:3px solid var(--danger)}
-    .alert-item.resolved .alert-snippet{border-left-color:var(--success)}
-    .alert-keywords{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
-    .kw-tag{font-size:.7rem;padding:2px 8px;border-radius:var(--r-full);background:rgba(239,68,68,.12);color:var(--danger);font-weight:600}
-    .alert-actions{display:flex;gap:8px;margin-top:12px}
-    .btn-sm{padding:6px 14px;border-radius:var(--r-full);border:none;cursor:pointer;font-family:var(--f);font-size:.78rem;font-weight:600;transition:all .2s}
-    .btn-resolve{background:rgba(16,185,129,.12);color:var(--success)}.btn-resolve:hover{background:var(--success);color:#fff}
-    .btn-view{background:rgba(139,92,246,.1);color:var(--p)}.btn-view:hover{background:var(--p);color:#fff}
-    .no-alerts{text-align:center;padding:32px;color:var(--muted);font-size:.9rem}
-
-    /* Attendance */
-    .att-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
-    .date-selector{display:flex;align-items:center;gap:8px}
-    .date-selector input[type=date]{padding:8px 12px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:rgba(255,255,255,.6);font-family:var(--f);font-size:.85rem;color:var(--text);outline:none}
-    .date-selector input:focus{border-color:var(--p)}
-    .btn-primary{background:linear-gradient(135deg,var(--p),var(--ph));color:#fff;border:none;padding:9px 18px;border-radius:var(--r-full);font-family:var(--f);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px var(--pg)}
-    .btn-primary:hover{transform:translateY(-1px);filter:brightness(1.08)}
-
-    /* Student Attendance Table */
-    .att-table{width:100%;border-collapse:collapse}
-    .att-table th,.att-table td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);font-size:.85rem}
-    .att-table th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
-    .att-table tr:last-child td{border-bottom:none}
-    .att-table tr:hover td{background:rgba(139,92,246,.03)}
-    .status-toggle{display:flex;align-items:center;gap:8px}
-    .toggle{width:44px;height:24px;border-radius:var(--r-full);border:none;cursor:pointer;transition:all .25s;position:relative;flex-shrink:0}
-    .toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
-    .toggle.present{background:var(--success)}.toggle.present::after{transform:translateX(20px)}
-    .toggle.absent{background:var(--border)}
-    .status-label{font-size:.78rem;font-weight:600;min-width:48px}
-    .status-label.present{color:var(--success)} .status-label.absent{color:var(--muted)}
-    .alert-flag{font-size:.8rem;background:rgba(239,68,68,.1);color:var(--danger);padding:2px 7px;border-radius:var(--r-full);font-weight:600}
-
-    /* Sync strip */
-    .sync-strip{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 14px;background:rgba(16,185,129,.06);border-radius:var(--r-md);border:1px solid rgba(16,185,129,.15)}
-    .sync-status{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
-    .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
-    .sync-dot.err{background:var(--danger)}
-
-    /* Toast */
-    .toast-zone{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
-    .toast{background:var(--text);color:var(--bg);padding:12px 20px;border-radius:var(--r-md);font-size:.85rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:slideIn .3s ease;max-width:320px}
-    .toast.danger-t{background:var(--danger)}
-    .toast.success-t{background:var(--success)}
-    @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-
-    /* Modal */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-    .modal-overlay.open{display:flex}
-    .modal{background:var(--card);border-radius:var(--r-lg);padding:32px;max-width:540px;width:90%;box-shadow:0 32px 64px rgba(0,0,0,.2);border:1px solid var(--border)}
-    .modal h3{font-size:1.1rem;font-weight:700;margin-bottom:6px;color:var(--text)}
-    .modal p{font-size:.87rem;color:var(--muted);margin-bottom:16px}
-    .modal-journal{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:var(--r-sm);padding:14px;font-size:.85rem;line-height:1.6;color:var(--text);margin-bottom:16px}
-    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
-    .status-label.neutral{color:var(--muted);background:rgba(107,114,128,.12)}
-    .att-hint{font-size:.72rem;color:var(--muted);font-weight:400}
-    .att-error{color:var(--danger,#ef4444);font-size:.85rem;margin:8px 0}
-    .att-skeleton{display:flex;flex-direction:column;gap:8px;margin:8px 0}
-    .att-skeleton span{height:36px;border-radius:10px;background:linear-gradient(90deg,#eceef3 25%,#f7f8fb 50%,#eceef3 75%);background-size:200% 100%;animation:attsh 1.2s linear infinite}
-    @keyframes attsh{to{background-position:-200% 0}}
-
-    /* ==========================================================
-       Mobile-first shell (360–430px). Wider screens: centred phone column.
-       Spacing scale: 4 / 8 / 12 / 16 / 20 / 24 only.
-       ========================================================== */
-    html,body{overflow-x:hidden;max-width:100%}
-    body{background:#ECEAF2;min-height:100dvh;-webkit-tap-highlight-color:transparent}
-    .shell{position:relative;width:100%;max-width:430px;margin:0 auto;min-height:100dvh;background:var(--bg);
-      padding-bottom:calc(24px + env(safe-area-inset-bottom));box-shadow:0 0 0 1px rgba(139,92,246,.06)}
-    @media(max-width:430px){body{background:var(--bg)}.shell{box-shadow:none}}
-    .glow{display:none}
-
-    /* Top bar: sticky, 56px */
-    .header{position:sticky;top:0;z-index:100;height:auto;min-height:56px;padding:env(safe-area-inset-top) 16px 0;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:nowrap}
-    .brand{display:flex;align-items:center;gap:8px;flex-shrink:0;height:56px}
-    .brand-icon{width:36px;height:36px;flex-shrink:0;color:#fff}
-    .brand-name{font-size:1.05rem;white-space:nowrap}
-    .brand-role{margin-left:0;flex-shrink:0;white-space:nowrap}
-    .hdr-right{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;flex:1}
-    .teacher-name{font-size:.85rem;font-weight:700;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
-    .btn-signout{height:44px;padding:0 16px;white-space:nowrap;flex-shrink:0}
-    @media(max-width:399px){.teacher-name{display:none}}
-
-    /* Page + cards: one 16px gutter, 12px gaps */
-    .page{display:flex;flex-direction:column;gap:12px;padding:16px}
-    .card{padding:16px;border-radius:20px;min-width:0}
-    .card-title{margin-bottom:12px;flex-wrap:wrap}
-
-    /* Summary: 2 x 2 */
-    .stats-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0}
-    .stat-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:16px 12px;min-width:0}
-    .stat-num{font-size:1.75rem}
-    .stat-label{font-size:12px;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-
-    /* Alerts */
-    .alert-list{max-height:none;overflow:visible}
-    .alert-student{flex-wrap:wrap;min-width:0}
-    .alert-name{overflow-wrap:anywhere}
-    .alert-user{font-size:.7rem;color:var(--muted);font-weight:400}
-    .alert-snippet{overflow-wrap:anywhere}
-    .alert-actions .btn-sm{min-height:44px;padding:0 16px}
-    .no-alerts,.empty-state{text-align:center;padding:24px 0;color:var(--muted);font-size:.9rem}
-
-    /* Attendance header: date | Refresh on one line, both 44px */
-    .att-header{flex-wrap:nowrap;gap:8px;margin-bottom:12px}
-    .date-selector{flex:1;min-width:0}
-    .date-selector input[type=date]{width:100%;min-width:0;height:44px;padding:0 12px;font-size:.9rem}
-    #btn-refresh-att{height:44px;padding:0 20px;flex-shrink:0}
-
-    /* Student row-cards (attendance, unmatched taps, journal) */
-    .row-list{display:flex;flex-direction:column;gap:8px}
-    .row-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px 16px;border:1px solid var(--border);
-      border-radius:16px;background:rgba(255,255,255,.75);min-width:0}
-    .row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0}
-    .row-name{font-weight:700;font-size:.95rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-    .row-name .att-hint{display:block;white-space:normal}
-    .row-name code{font-size:.85rem}
-    .row-time{flex-shrink:0;font-size:12px;color:var(--muted);white-space:nowrap}
-    .row-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,.8fr) minmax(0,1.6fr);gap:8px;width:100%;margin:0}
-    .row-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .row-grid div{min-width:0}
-    .row-grid dt{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600}
-    .row-grid dd{margin:0;font-size:14px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-    .status-pill,.mood-pill{flex-shrink:0;display:inline-flex;align-items:center;height:24px;padding:0 12px;border-radius:var(--r-full);font-size:12px;font-weight:700;white-space:nowrap}
-    .status-pill.present{background:rgba(16,185,129,.12);color:#0B7A5E}
-    .status-pill.absent{background:rgba(239,68,68,.1);color:#C2343A}
-    .status-pill.pending{background:rgba(245,158,11,.14);color:#9A5F00}
-    .status-pill.holiday{background:rgba(59,130,246,.1);color:#2563EB}
-    .status-pill.neutral{background:rgba(107,114,128,.12);color:var(--muted)}
-    .mood-pill{background:rgba(139,92,246,.1);color:var(--ph)}
-    .row-preview{font-size:.85rem;color:var(--muted);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;width:100%}
-
-    /* Sync status + note: two lines */
-    .sync-strip{flex-direction:column;align-items:flex-start;gap:4px;margin-top:12px;padding:12px 16px}
-    .sync-status{min-width:0;overflow-wrap:anywhere}
-    .sync-strip .att-hint{font-size:12px}
-
-    /* Toasts and modal inside the phone column */
-    .toast-zone{left:50%;right:auto;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));width:min(calc(100% - 32px),398px)}
-    .toast{max-width:none}
-    .modal{width:calc(100% - 32px);max-width:398px;padding:20px;max-height:85dvh;overflow-y:auto}
-    .modal-journal{overflow-wrap:anywhere}
-    .modal-actions .btn-sm{min-height:44px;padding:0 16px}
-  </style>
 </head>
 <body>
-<div class="glow g1"></div><div class="glow g2"></div>
+  <div id="app-container" class="app-container mode-desktop">
 
-<div class="shell">
-<!-- Header -->
-<header class="header">
-  <div class="brand">
-    <div class="brand-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg></div>
-    <span class="brand-name">MindMate</span>
-    <span class="brand-role">TEACHER</span>
+    <header class="top-nav glass-card" id="main-header"></header>
+
+    <main class="main-content" id="main-content">
+
+      <!-- HOME -->
+      <section class="screen-view active" id="t-home">
+        <div class="greeting-header">
+          <div class="orb-deco" aria-hidden="true"><i></i><i></i></div>
+          <div class="greeting-text">
+            <h1 class="greeting-title" id="t-greeting">Hello</h1>
+            <p class="greeting-sub" id="t-date">&nbsp;</p>
+          </div>
+        </div>
+
+        <div class="glass-card tint-pink attendance-card">
+          <div class="att-left">
+            <div>
+              <div class="att-title">Today's Attendance</div>
+              <div class="att-sub" id="t-att-sub">Loading</div>
+            </div>
+          </div>
+          <div class="att-right">
+            <span id="t-att-pill" class="att-pill">Loading</span>
+            <button type="button" class="btn-ghost-sm" id="t-refresh" aria-label="Refresh attendance">Refresh</button>
+          </div>
+          <div id="t-home-att" class="school-att" aria-live="polite"></div>
+        </div>
+
+        <div class="glass-card" id="t-alert-summary"></div>
+
+        <div class="entries-stream-section">
+          <div class="section-title-row">
+            <h3 class="section-title">Recent journal activity</h3>
+          </div>
+          <div class="entries-list" id="t-journal"></div>
+        </div>
+      </section>
+
+      <!-- ATTENDANCE -->
+      <section class="screen-view" id="t-attendance">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">Attendance</h2>
+            <p class="page-sub" id="t-att-day-label">Pick a day</p>
+          </div>
+        </div>
+        <div class="date-strip" id="t-date-strip" role="tablist" aria-label="Pick a day"></div>
+        <div id="t-att-state" aria-live="polite"></div>
+        <div class="entries-list" id="t-att-list"></div>
+        <p class="att-note">Taps come from the RFID sheet and cannot be edited here.</p>
+        <div class="glass-card" id="t-unmatched" style="display:none"></div>
+      </section>
+
+      <!-- STUDENTS -->
+      <section class="screen-view" id="t-students">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">Students</h2>
+            <p class="page-sub" id="t-students-sub">This month</p>
+          </div>
+        </div>
+        <div class="entries-list" id="t-student-list"></div>
+      </section>
+
+      <!-- ALERTS -->
+      <section class="screen-view" id="t-alerts">
+        <div class="screen-header">
+          <div class="orb-deco small" aria-hidden="true"><i></i><i></i></div>
+          <div>
+            <h2 class="page-title">Alerts</h2>
+            <p class="page-sub">Journal entries that need attention.</p>
+          </div>
+        </div>
+        <div class="filters-scroll-container" id="t-alert-filters"></div>
+        <div class="entries-list" id="t-alert-list"></div>
+      </section>
+
+      <!-- STUDENT DETAIL (opened from Attendance or Students) -->
+      <section class="screen-view" id="t-detail">
+        <div class="detail-top">
+          <button type="button" class="btn-ghost-sm" id="t-back">Back</button>
+          <div class="month-nav">
+            <button type="button" class="btn-icon" id="t-prev-month" aria-label="Previous month">&lsaquo;</button>
+            <span id="t-month-label"></span>
+            <button type="button" class="btn-icon" id="t-next-month" aria-label="Next month">&rsaquo;</button>
+          </div>
+        </div>
+        <div class="glass-card" id="t-detail-card"></div>
+      </section>
+    </main>
+
+    <nav class="phone-bottom-nav glass-card" id="t-nav" aria-label="Teacher navigation">
+      <button type="button" class="phone-nav-item active" data-tab="home" aria-label="Home">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </button>
+      <button type="button" class="phone-nav-item" data-tab="attendance" aria-label="Attendance">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </button>
+      <button type="button" class="phone-nav-item" data-tab="students" aria-label="Students">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </button>
+      <button type="button" class="phone-nav-item" data-tab="alerts" aria-label="Alerts">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="nav-badge" id="t-alert-badge" style="display:none">0</span>
+      </button>
+    </nav>
   </div>
-  <div class="hdr-right">
-    <span class="teacher-name" id="teacher-name">Teacher</span>
-    <button class="btn-icon btn-signout" onclick="logout()">Sign Out</button>
-  </div>
-</header>
 
-<main class="page">
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card alert-card">
-      <div class="stat-num" id="stat-alerts">0</div>
-      <div class="stat-label">Active Alerts</div>
-    </div>
-    <div class="stat-card total-card">
-      <div class="stat-num" id="stat-students">5</div>
-      <div class="stat-label">Total Students</div>
-    </div>
-    <div class="stat-card present-card">
-      <div class="stat-num" id="stat-present">0</div>
-      <div class="stat-label">Present Today</div>
-    </div>
-    <div class="stat-card absent-card">
-      <div class="stat-num" id="stat-absent">0</div>
-      <div class="stat-label">Absent Today</div>
-    </div>
-  </div>
-
-  <!-- Vulnerability Alerts -->
-  <section class="card">
-    <div class="card-title">Vulnerability Alerts <span id="alert-count-badge" class="alert-badge" style="display:none">0</span></div>
-    <div class="alert-list" id="alert-list">
-      <div class="no-alerts" id="no-alerts">No alerts right now. Students are doing great!</div>
-    </div>
-  </section>
-
-  <!-- Attendance -->
-  <section class="card">
-    <div class="card-title">Attendance Tracker</div>
-    <div class="att-header">
-      <div class="date-selector">
-        <input type="date" id="att-date" aria-label="Attendance date">
+  <!-- Journal entry modal (same modal style as the student app) -->
+  <div class="modal-backdrop" id="t-modal">
+    <div class="glass-modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="t-modal-title">Entry</h3>
+        <button type="button" class="btn-close-modal" id="t-modal-close" aria-label="Close">&times;</button>
       </div>
-      <button class="btn-primary" id="btn-refresh-att">Refresh</button>
-    </div>
-
-    <div id="att-state" aria-live="polite"></div>
-
-    <div class="row-list" id="att-body" aria-label="Students"></div>
-
-    <div class="sync-strip">
-      <div class="sync-status">
-        <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-msg">Not loaded yet</span>
+      <p class="muted small" id="t-modal-meta"></p>
+      <p id="t-modal-body" style="margin-top:12px;white-space:pre-wrap;overflow-wrap:anywhere"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="t-modal-dismiss">Close</button>
+        <button type="button" class="btn-primary" id="t-modal-resolve">Mark resolved</button>
       </div>
-      <span class="att-hint">Taps come from the RFID sheet and cannot be edited here.</span>
-    </div>
-  </section>
-
-  <!-- Taps from cards that are not linked to any profile -->
-  <section class="card" id="unmatched-card" style="display:none">
-    <div class="card-title">Unmatched taps</div>
-    <div class="row-list" id="unmatched-body"></div>
-  </section>
-
-  <!-- Journal activity -->
-  <section class="card">
-    <div class="card-title">Student Journal Activity (Recent)</div>
-    <div class="row-list" id="journal-log-body">
-      <div class="empty-state">No journal entries recorded yet.</div>
-    </div>
-  </section>
-</main>
-</div>
-
-<!-- Modal: view full journal -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h3 id="modal-title">Student Journal Entry</h3>
-    <p id="modal-meta"></p>
-    <div class="modal-journal" id="modal-body"></div>
-    <div class="modal-actions">
-      <button class="btn-sm btn-view" onclick="closeModal()">Close</button>
-      <button class="btn-sm btn-resolve" id="modal-resolve-btn">Mark Resolved</button>
     </div>
   </div>
-</div>
 
-<!-- Toast Zone -->
-<div class="toast-zone" id="toast-zone"></div>
+  <div class="toast-container" id="toast-container"></div>
 
-<script>
-// ─── Session Guard (inside DOMContentLoaded to prevent orientation-change
-//     redirects caused by script re-evaluation during layout reflows) ────────
-document.addEventListener('DOMContentLoaded', function() {
-const sess = JSON.parse(localStorage.getItem('mm_session')||'null');
-if (!sess || sess.role !== 'teacher' || !sess.token) { localStorage.removeItem('mm_session'); window.location.replace('/login.html'); return; }
-document.getElementById('teacher-name').textContent = sess ? sess.name : 'Teacher';
-
-// ─── Google Sheets Integration ────────────────────────────────
-async function pushToSheets(action, payload) {
-  try {
-    const url = `${window.API_BASE || ''}/api/sheets?action=${encodeURIComponent(action)}&data=${encodeURIComponent(JSON.stringify(payload))}`;
-    await fetch(url);
-    return true;
-  } catch(e) { return false; }
-}
-
-// ─── Students (ids match the login usernames; attendance itself comes from the server) ───
-const ALL_STUDENTS = [
-  { user:'BHARUNESH', name:'Bharunesh' },
-  { user:'BRANESH',   name:'Branesh' },
-  { user:'HEMANTH',   name:'Hemanth' }
-];
-const students = ALL_STUDENTS;
-document.getElementById('stat-students').textContent = students.length;
-
-// ─── Attendance from the RFID sheet (computed on the server, read-only here) ───
-const IST_TODAY = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-const dateInput = document.getElementById('att-date');
-dateInput.value = IST_TODAY;
-let attData = null;
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-function setState(html) { document.getElementById('att-state').innerHTML = html; }
-
-async function loadAttendance(force = false) {
-  const btn = document.getElementById('btn-refresh-att');
-  const month = (dateInput.value || IST_TODAY).slice(0, 7);
-  btn.disabled = true;
-  setState('<div class="att-skeleton"><span></span><span></span><span></span></div>');
-  try {
-    const r = await fetch(`${window.API_BASE || ''}/api/school-attendance?month=${month}${force ? '&refresh=1' : ''}`, { headers: { Authorization: 'Bearer ' + sess.token } });
-    if (r.status === 401) { localStorage.removeItem('mm_session'); window.location.replace('/login.html'); return; }
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || 'Could not load attendance');
-    attData = data;
-    setState(data.meta.stale ? `<p class="att-error">Showing the last saved data (${esc(data.meta.stale)}).</p>` : '');
-    document.getElementById('sync-dot').className = 'sync-dot';
-    document.getElementById('sync-msg').textContent = `Updated ${new Date(data.meta.fetchedAt).toLocaleTimeString()}${data.meta.cached ? ' (cached)' : ''}`;
-    renderAttendance();
-    renderUnmatched(data.unmatched || []);
-  } catch (e) {
-    attData = null;
-    document.getElementById('att-body').innerHTML = '';
-    document.getElementById('sync-dot').className = 'sync-dot err';
-    setState(`<p class="att-error" role="alert">${esc(e.message)} <button type="button" class="btn-sm btn-view" id="btn-retry-att">Retry</button></p>`);
-    document.getElementById('btn-retry-att').onclick = () => loadAttendance(true);
-    updateStats();
-  } finally { btn.disabled = false; }
-}
-
-function renderAttendance() {
-  const body = document.getElementById('att-body');
-  if (!attData) return;
-  const alerts = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
-  const date = dateInput.value;
-  body.innerHTML = attData.profiles.map(p => {
-    const day = p.days.find(d => d.date === date);
-    const status = day ? day.status : 'No data';
-    const cls = ({ Present: 'present', Absent: 'absent', Pending: 'pending', Holiday: 'holiday', Sunday: 'holiday' })[status] || 'neutral';
-    const hasAlert = alerts.some(a => a.studentUser === p.profileId && !a.resolved);
-    const sm = p.summary;
-    const out = day && day.checkOut && day.checkOut !== day.checkIn ? day.checkOut : '—';
-    return `<article class="row-card">
-      <div class="row-top">
-        <div class="row-name">${esc(p.name)}${p.linked ? '' : '<span class="att-hint">No card linked</span>'}</div>
-        <span class="status-pill ${cls}">${esc(status)}</span>
-      </div>
-      <dl class="row-grid">
-        <div><dt>In</dt><dd>${day && day.checkIn ? esc(day.checkIn) : '—'}</dd></div>
-        <div><dt>Out</dt><dd>${esc(out)}</dd></div>
-        <div><dt>Month</dt><dd>${sm.present}P / ${sm.absent}A, <strong>${sm.percentage === null ? 'N/A' : sm.percentage + '%'}</strong></dd></div>
-      </dl>
-      ${hasAlert ? '<span class="alert-flag">Alert</span>' : ''}
-    </article>`;
-  }).join('');
-  updateStats();
-}
-
-function updateStats() {
-  const date = dateInput.value;
-  const days = attData ? attData.profiles.map(p => p.days.find(d => d.date === date)) : [];
-  document.getElementById('stat-present').textContent = days.filter(d => d && d.status === 'Present').length;
-  document.getElementById('stat-absent').textContent = days.filter(d => d && d.status === 'Absent').length;
-}
-
-function renderUnmatched(list) {
-  const card = document.getElementById('unmatched-card');
-  card.style.display = list.length ? '' : 'none';
-  document.getElementById('unmatched-body').innerHTML = list.map(u => `<article class="row-card">
-      <div class="row-top"><div class="row-name"><code>${esc(u.uid)}</code></div><span class="status-pill neutral">${u.taps} tap${u.taps === 1 ? '' : 's'}</span></div>
-      <dl class="row-grid two"><div><dt>Name in sheet</dt><dd>${esc(u.name || '—')}</dd></div><div><dt>Last seen</dt><dd>${esc(u.lastSeen)}</dd></div></dl>
-    </article>`).join('');
-}
-
-dateInput.onchange = () => {
-  // Same month: just re-render. Different month: fetch that month.
-  if (attData && dateInput.value.slice(0, 7) === attData.month) { renderAttendance(); } else { loadAttendance(); }
-};
-document.getElementById('btn-refresh-att').onclick = () => loadAttendance(true);
-loadAttendance();
-setInterval(() => loadAttendance(), 2 * 60 * 1000);   // server caches the sheet for 2 minutes
-
-// ─── Vulnerability Alerts ─────────────────────────────────────
-function loadAlerts() {
-  const all = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
-  // Students shown to the teacher
-  const myStudentUsers = students.map(s=>s.user);
-  const mine = all.filter(a => myStudentUsers.includes(a.studentUser));
-  const active = mine.filter(a=>!a.resolved);
-
-  document.getElementById('stat-alerts').textContent = active.length;
-  const badge = document.getElementById('alert-count-badge');
-  if (active.length > 0) {
-    badge.style.display = 'inline'; badge.textContent = active.length;
-  } else {
-    badge.style.display = 'none';
-  }
-
-  const list = document.getElementById('alert-list');
-  const noAlerts = document.getElementById('no-alerts');
-  if (mine.length === 0) { noAlerts.style.display='block'; list.innerHTML='<div class="no-alerts">No alerts right now!</div>'; return; }
-  noAlerts.style.display='none';
-
-  list.innerHTML = mine.slice().reverse().map((a,i) => `
-    <div class="alert-item ${a.resolved?'resolved':''}" id="alert-item-${a.id}">
-      <div class="alert-student"><span class="alert-name">${esc(a.studentName)}</span> <span class="alert-user">(${esc(a.studentUser)})</span></div>
-      <div class="alert-time">${new Date(a.timestamp).toLocaleString()} · ${a.resolved?'Resolved':'UNRESOLVED'}</div>
-      <div class="alert-snippet">"${esc(a.excerpt)}"</div>
-      <div class="alert-keywords">${(a.keywords||[]).map(k=>`<span class="kw-tag">${esc(k)}</span>`).join('')}</div>
-      ${!a.resolved ? `<div class="alert-actions">
-        <button class="btn-sm btn-resolve" onclick="resolveAlert('${a.id}')">Resolve</button>
-        <button class="btn-sm btn-view" onclick="viewAlert('${a.id}')">View Entry</button>
-      </div>` : ''}
-    </div>`).join('');
-}
-
-function resolveAlert(id) {
-  const all = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
-  const idx = all.findIndex(a=>a.id===id);
-  if (idx>=0) { all[idx].resolved = true; localStorage.setItem('mm_vulnerability_alerts', JSON.stringify(all)); }
-  loadAlerts();
-  renderAttendance();
-  showToast('Alert marked as resolved','success');
-  pushToSheets('alert_resolved', { alertId: id, teacher: sess.name, resolvedAt: Date.now() });
-}
-
-let currentAlertId = null;
-function viewAlert(id) {
-  const all = JSON.parse(localStorage.getItem('mm_vulnerability_alerts')||'[]');
-  const a = all.find(x=>x.id===id);
-  if (!a) return;
-  currentAlertId = id;
-  document.getElementById('modal-title').textContent = `Alert — ${a.studentName}`;
-  document.getElementById('modal-meta').textContent = `Submitted: ${new Date(a.timestamp).toLocaleString()} · Mood: ${a.mood||'Unknown'}`;
-  document.getElementById('modal-body').textContent = a.fullContent || a.excerpt;
-  document.getElementById('modal-resolve-btn').onclick = () => { resolveAlert(id); closeModal(); };
-  document.getElementById('modal').classList.add('open');
-}
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
-document.getElementById('modal').onclick = e => { if(e.target===document.getElementById('modal')) closeModal(); };
-
-// ─── Journal Log ──────────────────────────────────────────────
-function loadJournalLog() {
-  const myStudentUsers = students.map(s=>s.user);
-  const allLogs = JSON.parse(localStorage.getItem('mm_journal_log')||'[]');
-  const mine = allLogs.filter(l => myStudentUsers.includes(l.studentUser));
-  const body = document.getElementById('journal-log-body');
-  if (mine.length === 0) { body.innerHTML = '<div class="empty-state">No journal entries recorded yet.</div>'; return; }
-  body.innerHTML = mine.slice().reverse().slice(0,20).map(l => {
-    const when = new Date(l.timestamp).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-    return `<article class="row-card">
-      <div class="row-top"><div class="row-name">${esc(l.studentName)}</div><span class="row-time">${esc(when)}</span></div>
-      <span class="mood-pill">${esc(l.mood || 'Unknown')}</span>
-      <p class="row-preview">${esc(l.content || '')}</p>
-      ${l.hasAlert ? '<span class="alert-flag">Vulnerable</span>' : ''}
-    </article>`;
-  }).join('');
-}
-
-// ─── Toast ────────────────────────────────────────────────────
-function showToast(msg, type='') {
-  const t = document.createElement('div');
-  t.className = 'toast' + (type?' '+type+'-t':'');
-  t.textContent = msg;
-  document.getElementById('toast-zone').appendChild(t);
-  setTimeout(()=>t.remove(), 3500);
-}
-
-// ─── Logout ───────────────────────────────────────────────────
-function logout() { localStorage.removeItem('mm_session'); window.location.href='/login.html'; }
-
-// ─── Auto-refresh alerts every 5s ────────────────────────────
-loadAlerts();
-loadJournalLog();
-setInterval(() => { loadAlerts(); loadJournalLog(); renderAttendance(); }, 5000);
-}); // end DOMContentLoaded
-</script>
+  <script src="shared.js"></script>
+  <script src="teacher.js"></script>
 </body>
 </html>
